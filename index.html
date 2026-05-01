@@ -1,0 +1,1631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LendTrack — Lending Management</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root{--sidebar:#1e3a5f;--primary:#2563eb;--success:#16a34a;--danger:#dc2626;--warn:#d97706}
+  *{box-sizing:border-box}
+  body{font-family:'Inter',system-ui,sans-serif;background:#f1f5f9}
+  #sidebar{width:240px;background:var(--sidebar);min-height:100vh;position:fixed;top:0;left:0;z-index:40;transition:transform .25s;display:flex;flex-direction:column}
+  #main{margin-left:240px;min-height:100vh}
+  .nav-link{display:flex;align-items:center;gap:10px;padding:10px 20px;color:#93c5fd;border-radius:8px;margin:2px 8px;cursor:pointer;transition:all .2s;font-size:14px;text-decoration:none}
+  .nav-link:hover,.nav-link.active{background:rgba(255,255,255,.12);color:#fff}
+  .nav-link.active{background:rgba(255,255,255,.18)}
+  .card{background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(0,0,0,.07)}
+  .btn{padding:8px 16px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;border:none;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+  .btn-primary{background:var(--primary);color:#fff}.btn-primary:hover{background:#1d4ed8}
+  .btn-success{background:#dcfce7;color:#16a34a}.btn-success:hover{background:#bbf7d0}
+  .btn-danger{background:#fee2e2;color:#dc2626}.btn-danger:hover{background:#fecaca}
+  .btn-secondary{background:#f1f5f9;color:#475569}.btn-secondary:hover{background:#e2e8f0}
+  .btn-sm{padding:5px 10px;font-size:12px}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .input{width:100%;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;outline:none;transition:border .2s;background:#fff}
+  .input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+  select.input{cursor:pointer}
+  .label{display:block;font-size:13px;font-weight:500;color:#374151;margin-bottom:4px}
+  .badge{padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600}
+  .badge-active{background:#dcfce7;color:#15803d}
+  .badge-closed{background:#f1f5f9;color:#64748b}
+  .badge-overdue{background:#fee2e2;color:#dc2626}
+  .progress-bar{height:6px;background:#e2e8f0;border-radius:4px;overflow:hidden}
+  .progress-fill{height:100%;border-radius:4px;transition:width .4s}
+  .stat-card{background:#fff;border-radius:16px;padding:20px 24px;box-shadow:0 1px 3px rgba(0,0,0,.07)}
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;display:flex;align-items:center;justify-content:center;padding:16px}
+  .modal-box{background:#fff;border-radius:20px;padding:28px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;animation:modalIn .2s ease;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+  @keyframes modalIn{from{opacity:0;transform:scale(.94) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+  .toast{position:fixed;top:20px;right:20px;z-index:200;padding:12px 18px;border-radius:10px;font-size:14px;font-weight:500;box-shadow:0 4px 20px rgba(0,0,0,.15);animation:slideIn .3s ease;max-width:320px}
+  @keyframes slideIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+  .toast-success{background:#166534;color:#fff}
+  .toast-error{background:#991b1b;color:#fff}
+  .toast-info{background:#1e3a5f;color:#fff}
+  .borrower-card{background:#fff;border-radius:14px;padding:18px;box-shadow:0 1px 3px rgba(0,0,0,.07);cursor:pointer;transition:all .2s;border:2px solid transparent}
+  .borrower-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.1);border-color:#bfdbfe}
+  .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+  .page-title{font-size:22px;font-weight:700;color:#0f172a}
+  .sub-title{font-size:13px;color:#94a3b8;margin-top:2px}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .preview-card{background:linear-gradient(135deg,#1e3a5f,#2563eb);border-radius:14px;padding:20px;color:#fff}
+  .preview-row{display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.1)}
+  .preview-row:last-child{border-bottom:none}
+  #mobile-bar{display:none}
+  @media(max-width:768px){
+    #sidebar{transform:translateX(-100%)}
+    #sidebar.open{transform:translateX(0)}
+    #main{margin-left:0;padding-bottom:70px}
+    #mobile-bar{display:flex;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e2e8f0;z-index:39}
+    .mobile-nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;padding:8px 0;font-size:10px;color:#94a3b8;cursor:pointer;gap:2px}
+    .mobile-nav-btn.active{color:var(--primary)}
+    .form-grid{grid-template-columns:1fr}
+  }
+  .loading-spinner{width:32px;height:32px;border:3px solid #e2e8f0;border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite;margin:40px auto}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .empty-state{text-align:center;padding:60px 20px;color:#94a3b8}
+  .empty-state .icon{font-size:48px;margin-bottom:12px}
+  .tab-bar{display:flex;background:#f1f5f9;border-radius:10px;padding:3px;margin-bottom:20px}
+  .tab{flex:1;text-align:center;padding:7px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;color:#64748b;transition:all .2s}
+  .tab.active{background:#fff;color:#0f172a;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+  .demo-banner{background:linear-gradient(90deg,#f59e0b,#f97316);color:#fff;padding:8px 16px;font-size:13px;text-align:center}
+  table.dt{width:100%;border-collapse:collapse;font-size:13px}
+  table.dt th{background:#f8fafc;padding:10px 14px;text-align:left;font-weight:600;color:#475569;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+  table.dt td{padding:12px 14px;border-bottom:1px solid #f1f5f9;color:#374151}
+  table.dt tr:hover td{background:#fafafa}
+  .overlay-sidebar{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:39}
+  @media(max-width:768px){.overlay-sidebar{display:block}}
+  .rate-equiv{font-size:12px;margin-top:6px;padding:7px 12px;background:#eff6ff;border-radius:6px;color:#1d4ed8;border-left:3px solid #3b82f6;min-height:30px}
+  .hint{font-size:11px;color:#94a3b8;margin-top:4px}
+  @media(max-width:768px){.hide-mobile{display:none}}
+  @media(max-width:900px){.dashboard-grid{grid-template-columns:1fr!important}}
+</style>
+</head>
+<body>
+
+<div id="toast" style="display:none" class="toast"></div>
+<div id="sidebar-overlay" class="overlay-sidebar" style="display:none" onclick="closeSidebar()"></div>
+
+<!-- ═══ SIDEBAR ═══ -->
+<div id="sidebar">
+  <div style="padding:22px 20px 14px;border-bottom:1px solid rgba(255,255,255,.08)">
+    <div style="font-size:20px;font-weight:800;color:#fff;letter-spacing:-.5px">💰 LendTrack</div>
+    <div style="font-size:11px;color:#93c5fd;margin-top:2px">Lending Management</div>
+  </div>
+  <nav style="padding:10px 0;flex:1">
+    <div class="nav-link active" onclick="navigate('dashboard')" id="nav-dashboard"><span>📊</span>Dashboard</div>
+    <div class="nav-link" onclick="navigate('borrowers')" id="nav-borrowers"><span>👥</span>Borrowers</div>
+    <div class="nav-link" onclick="navigate('add')" id="nav-add"><span>➕</span>Add Borrower</div>
+    <div class="nav-link" onclick="navigate('transfers')" id="nav-transfers"><span>🔄</span>Transfers</div>
+    <div class="nav-link" onclick="navigate('settings')" id="nav-settings"><span>⚙️</span>Settings</div>
+    <a class="nav-link" href="guide.html" target="_blank" style="margin-top:8px;border-top:1px solid rgba(255,255,255,.06);padding-top:14px"><span>📖</span>User Guide</a>
+  </nav>
+  <div style="padding:16px">
+    <div id="conn-status" style="background:rgba(245,158,11,.2);border-radius:8px;padding:8px 12px;font-size:11px;color:#fcd34d;text-align:center">🎭 Demo Mode</div>
+  </div>
+</div>
+
+<!-- ═══ MAIN ═══ -->
+<div id="main">
+  <div style="background:#fff;border-bottom:1px solid #e2e8f0;padding:10px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:30">
+    <div style="display:flex;align-items:center;gap:12px">
+      <button onclick="toggleSidebar()" id="menu-btn" style="display:none;background:none;border:none;font-size:20px;cursor:pointer">☰</button>
+      <div id="breadcrumb" style="font-size:14px;color:#64748b"></div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-sm btn-secondary" onclick="refreshData()">🔄</button>
+      <button class="btn btn-sm btn-primary" onclick="navigate('add')">+ Add Borrower</button>
+    </div>
+  </div>
+  <div id="content" style="padding:24px"></div>
+</div>
+
+<!-- Mobile bottom nav -->
+<div id="mobile-bar">
+  <div class="mobile-nav-btn active" onclick="navigate('dashboard')" id="mnav-dashboard"><span>📊</span><span>Home</span></div>
+  <div class="mobile-nav-btn" onclick="navigate('borrowers')" id="mnav-borrowers"><span>👥</span><span>Borrowers</span></div>
+  <div class="mobile-nav-btn" onclick="navigate('add')" id="mnav-add"><span>➕</span><span>Add</span></div>
+  <div class="mobile-nav-btn" onclick="navigate('transfers')" id="mnav-transfers"><span>🔄</span><span>Transfer</span></div>
+  <div class="mobile-nav-btn" onclick="navigate('settings')" id="mnav-settings"><span>⚙️</span><span>Settings</span></div>
+</div>
+
+<!-- Modal -->
+<div id="modal-overlay" class="modal-overlay" style="display:none" onclick="handleOverlayClick(event)">
+  <div id="modal-box" class="modal-box" onclick="event.stopPropagation()">
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+// CONFIG
+// ══════════════════════════════════════════════════════════
+const CFG = {
+  get url()      { return localStorage.getItem('lt_api_url') || ''; },
+  set url(v)     { localStorage.setItem('lt_api_url', v); },
+  get currency() { return localStorage.getItem('lt_currency') || '₹'; },
+  set currency(v){ localStorage.setItem('lt_currency', v); },
+  get demoMode() { return !this.url; }
+};
+
+let STATE = {
+  view: 'dashboard',
+  borrowers: [],
+  summary: null,
+  currentBorrowerId: null,
+  filterTab: 'all',
+  searchQuery: '',
+  chart1: null,
+  chart2: null
+};
+
+// ══════════════════════════════════════════════════════════
+// DEMO DATA — starts empty, works like real mode
+// ══════════════════════════════════════════════════════════
+let DEMO_BORROWERS = [];
+let DEMO_TXNS      = {};
+let DEMO_SUMMARY   = {
+  totalPrincipal:0, totalOutstanding:0, totalCollected:0, totalInterest:0,
+  activeBorrowers:0, closedBorrowers:0, overdueBorrowers:0, totalBorrowers:0
+};
+
+function recalcDemoSummary() {
+  const active  = DEMO_BORROWERS.filter(b => b.Status === 'ACTIVE');
+  const closed  = DEMO_BORROWERS.filter(b => b.Status === 'CLOSED');
+  const overdue = DEMO_BORROWERS.filter(b => b.isOverdue);
+  DEMO_SUMMARY.totalPrincipal   = DEMO_BORROWERS.reduce((s,b) => s + (b.Principal||0), 0);
+  DEMO_SUMMARY.totalOutstanding = active.reduce((s,b) => s + (b.outstanding||0), 0);
+  DEMO_SUMMARY.totalCollected   = DEMO_BORROWERS.reduce((s,b) => s + (b.paid||0), 0);
+  DEMO_SUMMARY.totalInterest    = DEMO_BORROWERS.reduce((s,b) => s + (b.stats?.totalInterest||0), 0);
+  DEMO_SUMMARY.activeBorrowers  = active.length;
+  DEMO_SUMMARY.closedBorrowers  = closed.length;
+  DEMO_SUMMARY.overdueBorrowers = overdue.length;
+  DEMO_SUMMARY.totalBorrowers   = DEMO_BORROWERS.length;
+}
+
+// ══════════════════════════════════════════════════════════
+// API — real or demo
+// ══════════════════════════════════════════════════════════
+async function apiGet(action, params = {}) {
+  if (CFG.demoMode) return demoGet(action, params);
+  const url = new URL(CFG.url);
+  url.searchParams.set('action', action);
+  Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, v));
+  const res = await fetch(url.toString());
+  const d = await res.json();
+  if (d.error) throw new Error(d.error);
+  return d;
+}
+
+async function apiPost(data) {
+  if (CFG.demoMode) return demoPost(data);
+  const res = await fetch(CFG.url, {
+    method: 'POST', redirect: 'follow',
+    headers: {'Content-Type': 'text/plain;charset=utf-8'},
+    body: JSON.stringify(data)
+  });
+  const d = await res.json();
+  if (d.error) throw new Error(d.error);
+  return d;
+}
+
+function demoGet(action, params) {
+  switch(action) {
+    case 'getBorrowers':      return JSON.parse(JSON.stringify(DEMO_BORROWERS));
+    case 'getSummary':        return JSON.parse(JSON.stringify(DEMO_SUMMARY));
+    case 'getTransactions':   return JSON.parse(JSON.stringify(DEMO_TXNS[params.id] || []));
+    case 'getAllTransactions': return Object.values(DEMO_TXNS).flat();
+    case 'ping':              return {ok:true};
+    default:                  return {};
+  }
+}
+
+function demoPost(data) {
+  const {action} = data;
+
+  if (action === 'addBorrower') {
+    const b   = data.borrower;
+    const id  = 'D' + Date.now();
+    const stats = calcStats(parseFloat(b.principal), parseFloat(b.interestRate),
+                            parseInt(b.months), b.interestType, b.rateUnit);
+    const newB = {
+      ID: id, Name: b.name, Phone: b.phone||'', Principal: parseFloat(b.principal),
+      InterestRate: parseFloat(b.interestRate), Months: parseInt(b.months),
+      StartDate: b.startDate, InterestType: b.interestType||'EMI', RateUnit: b.rateUnit||'PA',
+      Status: 'ACTIVE', Notes: b.notes||'',
+      outstanding: parseFloat(b.principal), paid: 0, isOverdue: false, stats
+    };
+    DEMO_BORROWERS.push(newB);
+    DEMO_TXNS[id] = [{
+      ID: 'T'+Date.now(), BorrowerID: id, Date: b.startDate,
+      Type: 'DISBURSEMENT', Amount: parseFloat(b.principal),
+      Description: 'Loan disbursement', RunningBalance: parseFloat(b.principal)
+    }];
+    recalcDemoSummary();
+    return {success:true, id};
+  }
+
+  if (action === 'recordPayment') {
+    const idx = DEMO_BORROWERS.findIndex(x => x.ID === data.borrowerId);
+    if (idx < 0) return {error:'Not found'};
+    const amt = parseFloat(data.amount);
+    const b   = DEMO_BORROWERS[idx];
+    b.paid += amt;
+    b.outstanding = Math.max(0, b.outstanding - amt);
+    if (b.outstanding < 0.01) b.Status = 'CLOSED';
+    if (!DEMO_TXNS[data.borrowerId]) DEMO_TXNS[data.borrowerId] = [];
+    DEMO_TXNS[data.borrowerId].push({
+      ID:'T'+Date.now(), BorrowerID:data.borrowerId,
+      Date: data.date||today(), Type:'PAYMENT', Amount:amt,
+      Description: data.description||'Payment', RunningBalance: b.outstanding
+    });
+    recalcDemoSummary();
+    return {success:true, newBalance:b.outstanding};
+  }
+
+  if (action === 'recordTransfer') {
+    const fi = DEMO_BORROWERS.findIndex(x => x.ID === data.fromBorrowerId);
+    const ti = DEMO_BORROWERS.findIndex(x => x.ID === data.toBorrowerId);
+    if (fi<0||ti<0) return {error:'Not found'};
+    const amt = parseFloat(data.amount);
+    const fb = DEMO_BORROWERS[fi], tb = DEMO_BORROWERS[ti];
+    fb.paid += amt; fb.outstanding = Math.max(0, fb.outstanding - amt);
+    tb.outstanding += amt;
+    if (!DEMO_TXNS[data.fromBorrowerId]) DEMO_TXNS[data.fromBorrowerId]=[];
+    if (!DEMO_TXNS[data.toBorrowerId])   DEMO_TXNS[data.toBorrowerId]=[];
+    DEMO_TXNS[data.fromBorrowerId].push({ID:'T'+Date.now(), BorrowerID:data.fromBorrowerId,
+      Date:data.date||today(), Type:'PAYMENT', Amount:amt, Description:'Transfer to '+tb.Name, RunningBalance:fb.outstanding});
+    DEMO_TXNS[data.toBorrowerId].push({ID:'T'+(Date.now()+1), BorrowerID:data.toBorrowerId,
+      Date:data.date||today(), Type:'DISBURSEMENT', Amount:amt, Description:'Transfer from '+fb.Name, RunningBalance:tb.outstanding});
+    recalcDemoSummary();
+    return {success:true};
+  }
+
+  if (action === 'updateBorrower') {
+    const idx = DEMO_BORROWERS.findIndex(x => x.ID === data.borrower.ID);
+    if (idx >= 0) {
+      const b = DEMO_BORROWERS[idx];
+      Object.assign(b, data.borrower);
+      b.stats = calcStats(b.Principal, b.InterestRate, b.Months, b.InterestType, b.RateUnit);
+      recalcDemoSummary();
+    }
+    return {success:true};
+  }
+
+  if (action === 'deleteBorrower') {
+    const idx = DEMO_BORROWERS.findIndex(x => x.ID === data.id);
+    if (idx >= 0) DEMO_BORROWERS.splice(idx, 1);
+    recalcDemoSummary();
+    return {success:true};
+  }
+
+  if (action === 'closeLoan') {
+    const b = DEMO_BORROWERS.find(x => x.ID === data.id);
+    if (b) b.Status = 'CLOSED';
+    recalcDemoSummary();
+    return {success:true};
+  }
+
+  return {success:true};
+}
+
+// ══════════════════════════════════════════════════════════
+// INTEREST RATE UTILITIES
+// ══════════════════════════════════════════════════════════
+
+// Returns decimal monthly rate regardless of input unit
+// PA=% p.a. | PM=% p.m. | PAISE=paise/₹/month | PER100=₹/₹100/month
+function toMonthlyRate(rate, unit) {
+  const r = parseFloat(rate) || 0;
+  switch(unit) {
+    case 'PM':     return r / 100;
+    case 'PAISE':  return r / 100;   // 1 paise/₹ = 1% per month
+    case 'PER100': return r / 100;   // ₹1/₹100 = 1% per month
+    default:       return r / 12 / 100; // PA
+  }
+}
+
+// Human-readable label for a rate+unit combo
+function formatRate(rate, unit) {
+  const r = parseFloat(rate) || 0;
+  switch(unit) {
+    case 'PM':     return `${r}% p.m.`;
+    case 'PAISE':  return `${r} paise/₹/mo`;
+    case 'PER100': return `${CFG.currency}${r}/₹100/mo`;
+    default:       return `${r}% p.a.`;
+  }
+}
+
+// Equivalent string shown next to the rate input
+function rateEquivText(rate, unit) {
+  const r  = parseFloat(rate);
+  if (!r && r !== 0) return 'Enter rate above to see equivalent';
+  const rm = toMonthlyRate(r, unit) * 100; // monthly %
+  const ra = rm * 12;                       // annual %
+  switch(unit) {
+    case 'PM':
+      return `${r}% per month = ${ra.toFixed(2)}% p.a. = ${r} paise per ₹ per month`;
+    case 'PAISE':
+      return `${r} paise/₹/month = ${rm.toFixed(3)}% per month = ${ra.toFixed(2)}% p.a.`;
+    case 'PER100':
+      return `${CFG.currency}${r}/₹100/month = ${rm.toFixed(3)}% per month = ${ra.toFixed(2)}% p.a.`;
+    default:
+      return `${r}% p.a. = ${rm.toFixed(3)}% per month = ${rm.toFixed(3)} paise/₹/month`;
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// LOAN MATH
+// ══════════════════════════════════════════════════════════
+function calcStats(principal, rate, months, loanType, rateUnit) {
+  const p = parseFloat(principal) || 0;
+  const m = parseInt(months) || 0;
+  if (!p || !m) return {monthlyPayment:0, totalInterest:0, totalRepayable:p};
+
+  const r = toMonthlyRate(rate, rateUnit || 'PA');
+  let monthly, interest;
+
+  switch(loanType) {
+    case 'SIMPLE':
+      interest = p * r * m;
+      monthly  = (p + interest) / m;
+      break;
+    case 'FLAT':
+      monthly  = (p / m) + (p * r);
+      interest = monthly * m - p;
+      break;
+    case 'INTEREST_ONLY':
+      monthly  = p * r;
+      interest = monthly * m;
+      break;
+    default: // EMI — reducing balance
+      monthly  = r === 0 ? p/m : p*r*Math.pow(1+r,m)/(Math.pow(1+r,m)-1);
+      interest = monthly * m - p;
+  }
+
+  return {
+    monthlyPayment: r2(monthly),
+    totalInterest:  r2(Math.max(0, interest)),
+    totalRepayable: r2(p + Math.max(0, interest))
+  };
+}
+
+function generateSchedule(principal, rate, months, startDate, loanType, rateUnit) {
+  const p    = parseFloat(principal) || 0;
+  const m    = parseInt(months) || 0;
+  const r    = toMonthlyRate(rate, rateUnit || 'PA');
+  const start= new Date(startDate || today());
+  let balance = p;
+  const rows  = [];
+
+  for (let i = 1; i <= m; i++) {
+    const d = new Date(start);
+    d.setMonth(d.getMonth() + i);
+
+    let interestPart, principalPart, payment;
+
+    switch(loanType) {
+      case 'SIMPLE':
+      case 'FLAT': {
+        const s = calcStats(p, rate, m, loanType, rateUnit);
+        payment      = s.monthlyPayment;
+        interestPart = p * r;
+        principalPart= payment - interestPart;
+        break;
+      }
+      case 'INTEREST_ONLY':
+        interestPart  = p * r;
+        principalPart = (i === m) ? balance : 0;
+        payment       = interestPart + principalPart;
+        break;
+      default: // EMI
+        interestPart  = balance * r;
+        const emi     = r===0 ? p/m : p*r*Math.pow(1+r,m)/(Math.pow(1+r,m)-1);
+        principalPart = emi - interestPart;
+        payment       = emi;
+    }
+
+    balance = Math.max(0, balance - principalPart);
+    rows.push({
+      month:i, date:d.toISOString().split('T')[0],
+      payment:r2(payment), principal:r2(principalPart),
+      interest:r2(interestPart), balance:r2(balance),
+      isPast: d < new Date()
+    });
+  }
+  return rows;
+}
+
+// ══════════════════════════════════════════════════════════
+// FORMATTERS
+// ══════════════════════════════════════════════════════════
+function r2(n)    { return Math.round((parseFloat(n)||0)*100)/100; }
+function fmt(n)   {
+  const v = parseFloat(n)||0;
+  if (v>=10000000) return CFG.currency+(v/10000000).toFixed(2)+'Cr';
+  if (v>=100000)   return CFG.currency+(v/100000).toFixed(2)+'L';
+  if (v>=1000)     return CFG.currency+(v/1000).toFixed(1)+'K';
+  return CFG.currency+v.toFixed(0);
+}
+function fmtFull(n){
+  return CFG.currency+(parseFloat(n)||0).toLocaleString('en-IN',{maximumFractionDigits:0});
+}
+function fmtDate(d){
+  if(!d) return '—';
+  return new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+}
+function today() { return new Date().toISOString().split('T')[0]; }
+function pct(a,b){ return (!b)?0:Math.min(100,Math.max(0,Math.round(parseFloat(a)/parseFloat(b)*100))); }
+
+// ══════════════════════════════════════════════════════════
+// ROUTER
+// ══════════════════════════════════════════════════════════
+function navigate(view, params={}) {
+  STATE.view = view;
+  if (params.id) STATE.currentBorrowerId = params.id;
+  updateNav(view);
+  renderView();
+  closeSidebar();
+}
+
+function updateNav(view) {
+  ['dashboard','borrowers','add','transfers','settings'].forEach(v => {
+    document.getElementById('nav-'+v)?.classList.toggle('active', v===view);
+    document.getElementById('mnav-'+v)?.classList.toggle('active', v===view);
+  });
+  const titles = {
+    dashboard:  ['📊 Dashboard',   'Portfolio overview'],
+    borrowers:  ['👥 Borrowers',   'All loans'],
+    add:        ['➕ Add Borrower','New loan'],
+    edit:       ['✏️ Edit Borrower','Update loan'],
+    detail:     ['👤 Profile',     ''],
+    transfers:  ['🔄 Transfers',   'P2P debt movement'],
+    settings:   ['⚙️ Settings',    'Configure app']
+  };
+  const t = titles[view]||['LendTrack',''];
+  document.getElementById('breadcrumb').innerHTML =
+    `<strong style="color:#0f172a">${t[0]}</strong>${t[1]?` <span style="color:#cbd5e1">›</span> ${t[1]}`:''}`;
+}
+
+async function renderView() {
+  document.getElementById('content').innerHTML = '<div class="loading-spinner"></div>';
+  try {
+    switch(STATE.view) {
+      case 'dashboard':  await renderDashboard(); break;
+      case 'borrowers':  await renderBorrowers(); break;
+      case 'detail':     await renderDetail(STATE.currentBorrowerId); break;
+      case 'add':        renderAddForm(null); break;
+      case 'edit':       renderAddForm(STATE.currentBorrowerId); break;
+      case 'transfers':  await renderTransfers(); break;
+      case 'settings':   renderSettings(); break;
+    }
+  } catch(e) {
+    document.getElementById('content').innerHTML = `
+      <div class="empty-state">
+        <div class="icon">⚠️</div>
+        <p style="margin-bottom:16px">${e.message}</p>
+        <button class="btn btn-primary" onclick="renderView()">Retry</button>
+      </div>`;
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════════════════════════
+async function renderDashboard() {
+  const [borrowers, summary] = await Promise.all([apiGet('getBorrowers'), apiGet('getSummary')]);
+  STATE.borrowers = borrowers;
+  STATE.summary   = summary;
+
+  const progress = pct(summary.totalCollected, summary.totalPrincipal+summary.totalInterest);
+  const overdueHtml = summary.overdueBorrowers>0
+    ? `<span class="badge badge-overdue" style="font-size:10px">${summary.overdueBorrowers} overdue</span>` : '';
+
+  const isEmpty = borrowers.length === 0;
+
+  document.getElementById('content').innerHTML = `
+    ${CFG.demoMode ? `<div class="demo-banner" style="margin:-24px -24px 24px;border-radius:0">
+      🎭 Demo Mode — data stored in browser only.
+      <a href="#" onclick="navigate('settings')" style="color:#fff;font-weight:700;text-decoration:underline">Connect Google Sheets</a> to persist data
+    </div>` : ''}
+
+    ${isEmpty ? `
+      <div style="max-width:480px;margin:40px auto;text-align:center">
+        <div style="font-size:56px;margin-bottom:16px">💰</div>
+        <div style="font-size:22px;font-weight:700;color:#0f172a;margin-bottom:8px">Welcome to LendTrack</div>
+        <div style="color:#64748b;margin-bottom:28px;line-height:1.6">Start by adding your first borrower. All calculations are done instantly — EMI, simple interest, paise-per-rupee and more.</div>
+        <button class="btn btn-primary" style="font-size:16px;padding:12px 28px" onclick="navigate('add')">➕ Add First Borrower</button>
+        <div style="margin-top:16px">
+          <a href="guide.html" target="_blank" style="font-size:13px;color:#3b82f6">📖 Read the User Guide →</a>
+        </div>
+      </div>` : `
+
+    <!-- Stats -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px">
+      ${statCard('💼 Total Capital',    fmtFull(summary.totalPrincipal),   summary.totalBorrowers+' borrowers', '#3b82f6')}
+      ${statCard('📈 Expected Interest',fmtFull(summary.totalInterest),    'Total earnings',                    '#8b5cf6')}
+      ${statCard('⏳ Outstanding',       fmtFull(summary.totalOutstanding), summary.activeBorrowers+' active '+overdueHtml, '#f59e0b')}
+      ${statCard('✅ Collected',          fmtFull(summary.totalCollected),  summary.closedBorrowers+' closed',  '#22c55e')}
+    </div>
+
+    <!-- Progress bar -->
+    <div class="card" style="padding:20px;margin-bottom:24px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div>
+          <div style="font-weight:600">Portfolio Recovery</div>
+          <div style="font-size:12px;color:#94a3b8">Amount collected vs total expected</div>
+        </div>
+        <div style="font-size:28px;font-weight:800;color:#2563eb">${progress}%</div>
+      </div>
+      <div class="progress-bar" style="height:10px">
+        <div class="progress-fill" style="width:${progress}%;background:linear-gradient(90deg,#3b82f6,#22c55e)"></div>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div style="display:grid;grid-template-columns:1fr 340px;gap:20px;margin-bottom:24px" class="dashboard-grid">
+      <div class="card" style="padding:20px">
+        <div style="font-weight:600;margin-bottom:14px">Outstanding by Borrower</div>
+        <canvas id="chart-bar" height="190"></canvas>
+      </div>
+      <div class="card" style="padding:20px">
+        <div style="font-weight:600;margin-bottom:14px">Loan Status</div>
+        <canvas id="chart-donut" height="160"></canvas>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:14px">
+          <div style="background:#eff6ff;border-radius:8px;padding:8px;text-align:center">
+            <div style="font-size:18px;font-weight:700;color:#2563eb">${summary.activeBorrowers}</div>
+            <div style="font-size:10px;color:#64748b">Active</div>
+          </div>
+          <div style="background:#fef2f2;border-radius:8px;padding:8px;text-align:center">
+            <div style="font-size:18px;font-weight:700;color:#dc2626">${summary.overdueBorrowers}</div>
+            <div style="font-size:10px;color:#64748b">Overdue</div>
+          </div>
+          <div style="background:#f0fdf4;border-radius:8px;padding:8px;text-align:center">
+            <div style="font-size:18px;font-weight:700;color:#16a34a">${summary.closedBorrowers}</div>
+            <div style="font-size:10px;color:#64748b">Closed</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent table -->
+    <div class="card" style="padding:20px">
+      <div class="section-header">
+        <div style="font-weight:600">All Loans</div>
+        <button class="btn btn-sm btn-secondary" onclick="navigate('borrowers')">View all →</button>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="dt">
+          <thead><tr><th>Name</th><th>Principal</th><th>Rate</th><th>Progress</th><th>Outstanding</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            ${borrowers.map(b=>`
+              <tr style="cursor:pointer" onclick="viewBorrower('${b.ID}')">
+                <td><div style="font-weight:600">${b.Name}</div><div style="font-size:11px;color:#94a3b8">${b.Phone||'—'}</div></td>
+                <td>${fmtFull(b.Principal)}</td>
+                <td style="white-space:nowrap">${formatRate(b.InterestRate,b.RateUnit)} · ${b.InterestType}</td>
+                <td style="min-width:110px">
+                  <div class="progress-bar"><div class="progress-fill" style="width:${pct(b.paid,b.stats.totalRepayable)}%;background:#3b82f6"></div></div>
+                  <div style="font-size:10px;color:#94a3b8;margin-top:2px">${pct(b.paid,b.stats.totalRepayable)}%</div>
+                </td>
+                <td style="font-weight:600;color:${b.outstanding>0?'#dc2626':'#16a34a'}">${fmtFull(b.outstanding)}</td>
+                <td>${statusBadge(b)}</td>
+                <td><button class="btn btn-sm btn-success" onclick="event.stopPropagation();showPaymentModal('${b.ID}')">💳 Pay</button></td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`}
+  `;
+
+  if (!isEmpty) setTimeout(() => initCharts(borrowers, summary), 50);
+}
+
+function initCharts(borrowers, summary) {
+  const active = borrowers.filter(b => b.Status==='ACTIVE');
+
+  if (STATE.chart1) STATE.chart1.destroy();
+  const c1 = document.getElementById('chart-bar')?.getContext('2d');
+  if (c1) STATE.chart1 = new Chart(c1, {
+    type:'bar',
+    data:{
+      labels: active.map(b => b.Name.split(' ')[0]),
+      datasets:[{
+        label:'Outstanding',
+        data: active.map(b => b.outstanding),
+        backgroundColor: active.map((_,i) => `hsl(${210+i*35},75%,55%)`),
+        borderRadius: 5
+      }]
+    },
+    options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:v=>fmt(v)}}}}
+  });
+
+  if (STATE.chart2) STATE.chart2.destroy();
+  const c2 = document.getElementById('chart-donut')?.getContext('2d');
+  if (c2) STATE.chart2 = new Chart(c2, {
+    type:'doughnut',
+    data:{
+      labels:['Active','Closed','Overdue'],
+      datasets:[{data:[summary.activeBorrowers,summary.closedBorrowers,summary.overdueBorrowers],
+        backgroundColor:['#3b82f6','#22c55e','#ef4444'],borderWidth:0}]
+    },
+    options:{responsive:true,plugins:{legend:{position:'bottom'}},cutout:'65%'}
+  });
+}
+
+function statCard(title, value, sub, color) {
+  return `<div class="stat-card" style="border-left:4px solid ${color}">
+    <div style="font-size:12px;color:#94a3b8;font-weight:500;margin-bottom:4px">${title}</div>
+    <div style="font-size:26px;font-weight:800;color:#0f172a;margin-bottom:4px">${value}</div>
+    <div style="font-size:12px;color:#64748b;display:flex;align-items:center;gap:6px">${sub}</div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════
+// BORROWERS LIST
+// ══════════════════════════════════════════════════════════
+async function renderBorrowers() {
+  STATE.borrowers = await apiGet('getBorrowers');
+  drawBorrowersList();
+}
+
+function drawBorrowersList() {
+  const q = STATE.searchQuery.toLowerCase();
+  const filtered = STATE.borrowers.filter(b => {
+    const matchQ = !q || b.Name.toLowerCase().includes(q) || (b.Phone||'').includes(q);
+    const matchT =
+      STATE.filterTab==='all' ||
+      (STATE.filterTab==='active'  && b.Status==='ACTIVE' && !b.isOverdue) ||
+      (STATE.filterTab==='overdue' && b.isOverdue) ||
+      (STATE.filterTab==='closed'  && b.Status==='CLOSED');
+    return matchQ && matchT;
+  });
+
+  const cnt = {
+    all:    STATE.borrowers.length,
+    active: STATE.borrowers.filter(b=>b.Status==='ACTIVE'&&!b.isOverdue).length,
+    overdue:STATE.borrowers.filter(b=>b.isOverdue).length,
+    closed: STATE.borrowers.filter(b=>b.Status==='CLOSED').length
+  };
+
+  document.getElementById('content').innerHTML = `
+    <div class="section-header">
+      <div><div class="page-title">Borrowers</div><div class="sub-title">${STATE.borrowers.length} total loans</div></div>
+      <button class="btn btn-primary" onclick="navigate('add')">+ New Borrower</button>
+    </div>
+    <div style="margin-bottom:14px">
+      <input class="input" id="search-input" placeholder="🔍 Search by name or phone…"
+        value="${STATE.searchQuery}" oninput="STATE.searchQuery=this.value;drawBorrowersList()" style="max-width:360px">
+    </div>
+    <div class="tab-bar" style="max-width:460px">
+      ${['all','active','overdue','closed'].map(t=>`
+        <div class="tab ${STATE.filterTab===t?'active':''}" onclick="STATE.filterTab='${t}';drawBorrowersList()">
+          ${t[0].toUpperCase()+t.slice(1)} (${cnt[t]})
+        </div>`).join('')}
+    </div>
+    ${filtered.length===0
+      ? `<div class="empty-state"><div class="icon">${STATE.borrowers.length===0?'💰':'🔍'}</div>
+         <p>${STATE.borrowers.length===0?'No borrowers yet. Add your first one!':'No results found.'}</p>
+         ${STATE.borrowers.length===0?`<button class="btn btn-primary" onclick="navigate('add')">Add First Borrower</button>`:''}
+         </div>`
+      : `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px">
+           ${filtered.map(b=>borrowerCard(b)).join('')}
+         </div>`
+    }
+  `;
+}
+
+function borrowerCard(b) {
+  const repPct = pct(b.paid, b.stats.totalRepayable);
+  return `
+    <div class="borrower-card" onclick="viewBorrower('${b.ID}')">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+        <div>
+          <div style="font-size:16px;font-weight:700;color:#0f172a">${b.Name}</div>
+          <div style="font-size:12px;color:#94a3b8">${b.Phone||'—'}</div>
+        </div>
+        ${statusBadge(b)}
+      </div>
+      <div style="font-size:26px;font-weight:800;color:#1e3a5f;margin-bottom:2px">${fmtFull(b.Principal)}</div>
+      <div style="font-size:12px;color:#64748b;margin-bottom:10px">
+        ${formatRate(b.InterestRate, b.RateUnit)} · ${b.Months} months · ${b.InterestType}
+      </div>
+      <div class="progress-bar" style="margin-bottom:5px">
+        <div class="progress-fill" style="width:${repPct}%;background:${b.isOverdue?'#ef4444':b.Status==='CLOSED'?'#22c55e':'#3b82f6'}"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:12px">
+        <span style="color:#64748b">Paid: <strong>${fmtFull(b.paid)}</strong></span>
+        <span style="color:#64748b;font-weight:600">${repPct}%</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #f1f5f9;padding-top:10px">
+        <div>
+          <div style="font-size:10px;color:#94a3b8">Outstanding</div>
+          <div style="font-size:18px;font-weight:700;color:${b.outstanding>0?'#dc2626':'#16a34a'}">${fmtFull(b.outstanding)}</div>
+        </div>
+        <div style="display:flex;gap:6px">
+          ${b.Status!=='CLOSED'?`<button class="btn btn-sm btn-success" onclick="event.stopPropagation();showPaymentModal('${b.ID}')">💳 Pay</button>`:''}
+          <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation();viewBorrower('${b.ID}')">View →</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function statusBadge(b) {
+  if (b.isOverdue) return '<span class="badge badge-overdue">⚠️ Overdue</span>';
+  if (b.Status==='CLOSED') return '<span class="badge badge-closed">✅ Closed</span>';
+  return '<span class="badge badge-active">🟢 Active</span>';
+}
+
+function viewBorrower(id) {
+  STATE.currentBorrowerId = id;
+  navigate('detail', {id});
+}
+
+// ══════════════════════════════════════════════════════════
+// BORROWER DETAIL
+// ══════════════════════════════════════════════════════════
+async function renderDetail(id) {
+  const [borrowers, txns] = await Promise.all([
+    apiGet('getBorrowers'),
+    apiGet('getTransactions', {id})
+  ]);
+  STATE.borrowers = borrowers;
+  const b = borrowers.find(x => x.ID === id);
+  if (!b) { document.getElementById('content').innerHTML='<div class="empty-state">Borrower not found.</div>'; return; }
+
+  const repPct   = pct(b.paid, b.stats.totalRepayable);
+  const schedule = generateSchedule(b.Principal, b.InterestRate, b.Months, b.StartDate, b.InterestType, b.RateUnit);
+  const annualRate = (toMonthlyRate(b.InterestRate, b.RateUnit||'PA')*12*100).toFixed(2);
+
+  document.getElementById('content').innerHTML = `
+    <!-- Back + Actions -->
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:20px">
+      <button class="btn btn-secondary" onclick="navigate('borrowers')">← Borrowers</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        ${b.Status!=='CLOSED'?`<button class="btn btn-success" onclick="showPaymentModal('${b.ID}')">💳 Pay</button>`:''}
+        <button class="btn btn-secondary" onclick="showTransferModal('${b.ID}')">🔄 Transfer</button>
+        <button class="btn btn-secondary" onclick="STATE.currentBorrowerId='${b.ID}';navigate('edit')">✏️ Edit</button>
+        ${b.Status==='ACTIVE'?`<button class="btn btn-danger" onclick="confirmClose('${b.ID}')">🔒 Close</button>`:''}
+        <button class="btn btn-danger btn-sm" title="Delete" onclick="confirmDelete('${b.ID}')">🗑️</button>
+      </div>
+    </div>
+
+    <!-- Header card (gradient) -->
+    <div style="background:linear-gradient(135deg,#1e3a5f,#2563eb);border-radius:16px;padding:24px;margin-bottom:20px;color:#fff">
+      <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:16px">
+        <div>
+          <div style="font-size:26px;font-weight:800">${b.Name}</div>
+          <div style="opacity:.8;font-size:14px">${b.Phone||'No phone'}</div>
+          ${b.Notes?`<div style="opacity:.6;font-size:12px;margin-top:4px">📝 ${b.Notes}</div>`:''}
+        </div>
+        <div style="text-align:right">
+          ${statusBadge(b)}
+          <div style="font-size:34px;font-weight:800;margin-top:6px">${fmtFull(b.outstanding)}</div>
+          <div style="opacity:.7;font-size:12px">outstanding</div>
+        </div>
+      </div>
+      <div class="progress-bar" style="height:8px;margin-top:18px;background:rgba(255,255,255,.2)">
+        <div style="height:100%;width:${repPct}%;background:#22c55e;border-radius:4px"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;opacity:.7;margin-top:5px">
+        <span>Paid ${fmtFull(b.paid)}</span>
+        <span>${repPct}% of ${fmtFull(b.stats.totalRepayable)}</span>
+      </div>
+    </div>
+
+    <!-- Loan info grid -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px">
+      ${miniStat('Principal',     fmtFull(b.Principal))}
+      ${miniStat('Rate',          formatRate(b.InterestRate,b.RateUnit) + ' <span style="font-size:10px;color:#94a3b8">('+annualRate+'% p.a.)</span>')}
+      ${miniStat('Duration',      b.Months+' months')}
+      ${miniStat('Loan Type',     b.InterestType)}
+      ${miniStat('Monthly EMI',   fmtFull(b.stats.monthlyPayment))}
+      ${miniStat('Total Interest',fmtFull(b.stats.totalInterest))}
+      ${miniStat('Total Payable', fmtFull(b.stats.totalRepayable))}
+      ${miniStat('Start Date',    fmtDate(b.StartDate))}
+      ${miniStat('End Date',      fmtDate(b.endDate))}
+    </div>
+
+    <!-- Tabs -->
+    <div class="tab-bar" id="dtabs">
+      <div class="tab active" onclick="switchDTab('txns')">Transactions (${txns.length})</div>
+      <div class="tab" onclick="switchDTab('schedule')">Payment Schedule</div>
+    </div>
+
+    <!-- Transactions tab -->
+    <div id="dtab-txns" class="card" style="overflow:hidden">
+      ${txns.length===0
+        ? '<div class="empty-state" style="padding:40px">No transactions yet.</div>'
+        : `<div style="overflow-x:auto"><table class="dt">
+            <thead><tr><th>Date</th><th>Type</th><th>Amount</th><th>Description</th><th>Balance</th></tr></thead>
+            <tbody>
+              ${[...txns].reverse().map(t=>`
+                <tr>
+                  <td>${fmtDate(t.Date)}</td>
+                  <td><span style="background:${t.Type==='PAYMENT'?'#dcfce7':t.Type==='DISBURSEMENT'?'#dbeafe':'#fef9c3'};
+                    color:${t.Type==='PAYMENT'?'#15803d':t.Type==='DISBURSEMENT'?'#1e40af':'#854d0e'};
+                    padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">${t.Type}</span></td>
+                  <td style="font-weight:600;color:${t.Type==='PAYMENT'?'#16a34a':'#dc2626'}">
+                    ${t.Type==='PAYMENT'?'−':'+'}${fmtFull(t.Amount)}</td>
+                  <td style="color:#64748b">${t.Description}</td>
+                  <td style="font-weight:600">${fmtFull(t.RunningBalance)}</td>
+                </tr>`).join('')}
+            </tbody>
+          </table></div>`
+      }
+    </div>
+
+    <!-- Schedule tab (hidden) -->
+    <div id="dtab-schedule" class="card" style="overflow:hidden;display:none">
+      <div style="overflow-x:auto"><table class="dt">
+        <thead><tr><th>#</th><th>Date</th><th>Payment</th><th>Principal</th><th>Interest</th><th>Balance</th></tr></thead>
+        <tbody>
+          ${schedule.map(s=>`
+            <tr style="${s.isPast?'opacity:.45':''}">
+              <td>${s.month}</td><td>${fmtDate(s.date)}</td>
+              <td style="font-weight:600">${fmtFull(s.payment)}</td>
+              <td style="color:#2563eb">${fmtFull(s.principal)}</td>
+              <td style="color:#dc2626">${fmtFull(s.interest)}</td>
+              <td style="font-weight:600">${fmtFull(s.balance)}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table></div>
+    </div>
+  `;
+}
+
+function miniStat(label, value) {
+  return `<div class="card" style="padding:14px">
+    <div style="font-size:11px;color:#94a3b8;margin-bottom:3px">${label}</div>
+    <div style="font-size:15px;font-weight:700;color:#0f172a">${value}</div>
+  </div>`;
+}
+
+function switchDTab(tab) {
+  document.getElementById('dtab-txns').style.display     = tab==='txns'?'block':'none';
+  document.getElementById('dtab-schedule').style.display = tab==='schedule'?'block':'none';
+  document.querySelectorAll('#dtabs .tab').forEach((el,i)=>
+    el.classList.toggle('active',(i===0&&tab==='txns')||(i===1&&tab==='schedule')));
+}
+
+// ══════════════════════════════════════════════════════════
+// ADD / EDIT FORM
+// ══════════════════════════════════════════════════════════
+function renderAddForm(editId) {
+  const b     = editId ? STATE.borrowers.find(x=>x.ID===editId) : null;
+  const isEdit= !!b;
+  const defUnit = b?.RateUnit || 'PA';
+
+  document.getElementById('content').innerHTML = `
+    ${isEdit?`<button class="btn btn-secondary" onclick="viewBorrower('${editId}')" style="margin-bottom:18px">← Back</button>`:''}
+    <div style="max-width:720px">
+      <div class="page-title" style="margin-bottom:4px">${isEdit?'Edit Borrower':'New Borrower'}</div>
+      <div class="sub-title" style="margin-bottom:22px">${isEdit?'Update loan details':'Fill in loan details — see live preview →'}</div>
+
+      <div style="display:grid;grid-template-columns:1fr 300px;gap:24px;align-items:start">
+
+        <!-- LEFT: Form -->
+        <div class="card" style="padding:24px">
+          <div class="form-grid">
+            <div>
+              <label class="label">Full Name *</label>
+              <input class="input" id="f-name" value="${b?.Name||''}" placeholder="Borrower's full name">
+            </div>
+            <div>
+              <label class="label">Phone</label>
+              <input class="input" id="f-phone" value="${b?.Phone||''}" placeholder="Mobile number" type="tel">
+            </div>
+            <div>
+              <label class="label">Principal Amount (${CFG.currency}) *</label>
+              <input class="input" id="f-principal" value="${b?.Principal||''}" placeholder="e.g. 50000"
+                     type="number" min="1" oninput="updatePreview()">
+            </div>
+            <div>
+              <label class="label">Duration (Months) *</label>
+              <input class="input" id="f-months" value="${b?.Months||''}" placeholder="e.g. 12"
+                     type="number" min="1" oninput="updatePreview()">
+            </div>
+          </div>
+
+          <!-- Rate input — full width -->
+          <div style="margin-top:16px">
+            <label class="label">Interest Rate *</label>
+            <div style="display:flex;gap:8px">
+              <input class="input" id="f-rate" value="${b?.InterestRate||''}" type="number" min="0" step="0.01"
+                     style="flex:1" placeholder="e.g. 2" oninput="onRateChange()">
+              <select class="input" id="f-rate-unit" style="width:200px" onchange="onRateChange()">
+                <option value="PA"     ${defUnit==='PA'    ?'selected':''}>% per annum</option>
+                <option value="PM"     ${defUnit==='PM'    ?'selected':''}>% per month</option>
+                <option value="PAISE"  ${defUnit==='PAISE' ?'selected':''}>Paise / ₹ / month</option>
+                <option value="PER100" ${defUnit==='PER100'?'selected':''}>₹ per ₹100 / month</option>
+              </select>
+            </div>
+            <div class="rate-equiv" id="rate-equiv">${rateEquivText(b?.InterestRate||'',defUnit)}</div>
+            <div class="hint">
+              Common Indian rates: 1 paise = 12% p.a. · 2 paise = 24% p.a. · 3 paise = 36% p.a.
+            </div>
+          </div>
+
+          <div style="margin-top:16px">
+            <label class="label">Loan Type *</label>
+            <select class="input" id="f-type" onchange="updatePreview()">
+              ${['EMI','SIMPLE','FLAT','INTEREST_ONLY'].map(t=>
+                `<option value="${t}" ${(b?.InterestType||'EMI')===t?'selected':''}>${loanTypeLabel(t)}</option>`
+              ).join('')}
+            </select>
+            <div id="type-desc" class="hint" style="margin-top:6px"></div>
+          </div>
+
+          <div style="margin-top:16px">
+            <label class="label">Start Date *</label>
+            <input class="input" id="f-start" value="${b?.StartDate||today()}" type="date">
+          </div>
+
+          <div style="margin-top:16px">
+            <label class="label">Notes</label>
+            <textarea class="input" id="f-notes" rows="2"
+              placeholder="Purpose, relationship, collateral…">${b?.Notes||''}</textarea>
+          </div>
+
+          <div style="display:flex;gap:10px;margin-top:20px">
+            <button class="btn btn-primary" id="submit-btn"
+              onclick="${isEdit?`saveEdit('${editId}')`:'submitBorrower()'}" style="flex:1">
+              ${isEdit?'💾 Save Changes':'➕ Add Borrower'}
+            </button>
+            <button class="btn btn-secondary"
+              onclick="${isEdit?`viewBorrower('${editId}')`:"navigate('borrowers')"}">Cancel</button>
+          </div>
+        </div>
+
+        <!-- RIGHT: Live preview -->
+        <div>
+          <div class="preview-card" id="preview-card">
+            <div style="font-size:12px;opacity:.7;margin-bottom:12px;font-weight:600">LOAN PREVIEW</div>
+            <div id="preview-empty" style="opacity:.5;text-align:center;padding:20px 0;font-size:13px">
+              Fill in details to see preview
+            </div>
+            <div id="preview-data" style="display:none">
+              <div class="preview-row"><span>Monthly Payment</span><strong id="pv-monthly"></strong></div>
+              <div class="preview-row"><span>Principal</span><span id="pv-principal"></span></div>
+              <div class="preview-row"><span>Total Interest</span><span id="pv-interest"></span></div>
+              <div class="preview-row"><span>Effective rate</span><span id="pv-effrate"></span></div>
+              <div class="preview-row" style="font-size:15px;padding-top:10px">
+                <strong>Total Repayable</strong><strong id="pv-total"></strong>
+              </div>
+            </div>
+          </div>
+
+          <div id="rate-table" style="margin-top:14px;display:none">
+            <div class="card" style="padding:16px">
+              <div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:10px">📊 Quick Rate Reference</div>
+              <table style="width:100%;font-size:11px;border-collapse:collapse">
+                <thead><tr style="background:#f1f5f9">
+                  <th style="padding:5px 8px;text-align:left">Paise/₹</th>
+                  <th style="padding:5px 8px;text-align:right">% p.m.</th>
+                  <th style="padding:5px 8px;text-align:right">% p.a.</th>
+                </tr></thead>
+                <tbody>
+                  ${[0.5,1,1.5,2,2.5,3,4,5].map(p=>`
+                    <tr style="border-bottom:1px solid #f1f5f9">
+                      <td style="padding:4px 8px">${p}</td>
+                      <td style="padding:4px 8px;text-align:right">${p}%</td>
+                      <td style="padding:4px 8px;text-align:right;font-weight:600">${(p*12).toFixed(0)}%</td>
+                    </tr>`).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  `;
+
+  updateTypeDesc();
+  updatePreview();
+  // Show rate reference table if paise/per100 unit selected
+  toggleRateTable(defUnit);
+}
+
+function loanTypeLabel(t) {
+  return {EMI:'EMI (Reducing Balance)',SIMPLE:'Simple Interest',FLAT:'Flat Rate',INTEREST_ONLY:'Interest Only (Bullet)'}[t]||t;
+}
+
+function loanTypeDesc(t) {
+  return {
+    EMI:           'Equal monthly EMIs. Interest on reducing balance. Bank standard. Best for borrowers.',
+    SIMPLE:        'Interest = P × R × T. Fixed total interest. Common for short informal loans.',
+    FLAT:          'Monthly interest on full principal + equal principal. Higher effective rate than EMI.',
+    INTEREST_ONLY: 'Pay only interest each month; full principal at end. Best for business/bridge loans.'
+  }[t]||'';
+}
+
+function updateTypeDesc() {
+  const t = document.getElementById('f-type')?.value;
+  const el = document.getElementById('type-desc');
+  if (el && t) el.textContent = loanTypeDesc(t);
+}
+
+function onRateChange() {
+  const rate = document.getElementById('f-rate')?.value;
+  const unit = document.getElementById('f-rate-unit')?.value;
+  const el   = document.getElementById('rate-equiv');
+  if (el) el.textContent = rateEquivText(rate, unit);
+  toggleRateTable(unit);
+  updatePreview();
+}
+
+function toggleRateTable(unit) {
+  const el = document.getElementById('rate-table');
+  if (el) el.style.display = (unit==='PAISE'||unit==='PER100'||unit==='PM') ? 'block' : 'none';
+}
+
+function updatePreview() {
+  const p    = parseFloat(document.getElementById('f-principal')?.value);
+  const r    = parseFloat(document.getElementById('f-rate')?.value) || 0;
+  const m    = parseInt(document.getElementById('f-months')?.value);
+  const t    = document.getElementById('f-type')?.value || 'EMI';
+  const unit = document.getElementById('f-rate-unit')?.value || 'PA';
+
+  updateTypeDesc();
+
+  if (!p || !m) {
+    document.getElementById('preview-empty')?.style && (document.getElementById('preview-empty').style.display='block');
+    document.getElementById('preview-data')?.style   && (document.getElementById('preview-data').style.display='none');
+    return;
+  }
+
+  const stats    = calcStats(p, r, m, t, unit);
+  const monthlyR = toMonthlyRate(r, unit)*100;
+  const annualR  = monthlyR * 12;
+
+  const set = (id, v) => { const el=document.getElementById(id); if(el) el.innerHTML=v; };
+  set('pv-monthly',   fmtFull(stats.monthlyPayment)+'/mo');
+  set('pv-principal', fmtFull(p));
+  set('pv-interest',  fmtFull(stats.totalInterest));
+  set('pv-effrate',   monthlyR.toFixed(3)+'% p.m. / '+annualR.toFixed(2)+'% p.a.');
+  set('pv-total',     fmtFull(stats.totalRepayable));
+
+  document.getElementById('preview-empty')&&(document.getElementById('preview-empty').style.display='none');
+  document.getElementById('preview-data')&&(document.getElementById('preview-data').style.display='block');
+}
+
+async function submitBorrower() {
+  const name  = document.getElementById('f-name')?.value?.trim();
+  const p     = parseFloat(document.getElementById('f-principal')?.value);
+  const r     = parseFloat(document.getElementById('f-rate')?.value) || 0;
+  const m     = parseInt(document.getElementById('f-months')?.value);
+  const start = document.getElementById('f-start')?.value;
+  const type  = document.getElementById('f-type')?.value;
+  const unit  = document.getElementById('f-rate-unit')?.value || 'PA';
+
+  if (!name)              { showToast('Name is required','error'); return; }
+  if (!p || p<=0)         { showToast('Enter a valid principal amount','error'); return; }
+  if (!m || m<=0)         { showToast('Enter duration in months','error'); return; }
+  if (!start)             { showToast('Select a start date','error'); return; }
+
+  const btn = document.getElementById('submit-btn');
+  if (btn) { btn.disabled=true; btn.textContent='Adding…'; }
+
+  try {
+    const res = await apiPost({
+      action: 'addBorrower',
+      borrower: {
+        name, phone: document.getElementById('f-phone')?.value?.trim()||'',
+        principal:p, interestRate:r, months:m, startDate:start,
+        interestType:type, rateUnit:unit,
+        notes: document.getElementById('f-notes')?.value?.trim()||''
+      }
+    });
+    showToast('Borrower added! 🎉','success');
+    STATE.borrowers = await apiGet('getBorrowers');
+    navigate('detail', {id:res.id});
+  } catch(e) {
+    showToast(e.message,'error');
+    if (btn) { btn.disabled=false; btn.textContent='➕ Add Borrower'; }
+  }
+}
+
+async function saveEdit(id) {
+  const b = STATE.borrowers.find(x=>x.ID===id);
+  if (!b) return;
+  const btn = document.getElementById('submit-btn');
+  if (btn) { btn.disabled=true; btn.textContent='Saving…'; }
+  try {
+    await apiPost({
+      action: 'updateBorrower',
+      borrower: {
+        ID: id,
+        Name:         document.getElementById('f-name').value.trim(),
+        Phone:        document.getElementById('f-phone').value.trim(),
+        InterestRate: parseFloat(document.getElementById('f-rate').value)||0,
+        RateUnit:     document.getElementById('f-rate-unit').value||'PA',
+        Months:       parseInt(document.getElementById('f-months').value),
+        InterestType: document.getElementById('f-type').value,
+        Status:       b.Status,
+        Notes:        document.getElementById('f-notes').value.trim()
+      }
+    });
+    showToast('Saved','success');
+    STATE.borrowers = await apiGet('getBorrowers');
+    navigate('detail',{id});
+  } catch(e) {
+    showToast(e.message,'error');
+    if (btn) { btn.disabled=false; btn.textContent='💾 Save Changes'; }
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// TRANSFERS
+// ══════════════════════════════════════════════════════════
+async function renderTransfers() {
+  STATE.borrowers = await apiGet('getBorrowers');
+  const active  = STATE.borrowers.filter(b=>b.Status==='ACTIVE');
+  const allBors = STATE.borrowers;
+
+  document.getElementById('content').innerHTML = `
+    <div class="page-title" style="margin-bottom:4px">Borrower Transfers</div>
+    <div class="sub-title" style="margin-bottom:22px">Move debt from one borrower to another</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:820px">
+      <div class="card" style="padding:24px">
+        <div style="font-weight:600;font-size:15px;margin-bottom:18px">🔄 Record a Transfer</div>
+
+        <div style="margin-bottom:14px">
+          <label class="label">From (their debt reduces) *</label>
+          <select class="input" id="tr-from" onchange="updateTransferPreview()">
+            <option value="">— Select borrower —</option>
+            ${active.map(b=>`<option value="${b.ID}">${b.Name} · Owes ${fmtFull(b.outstanding)}</option>`).join('')}
+          </select>
+        </div>
+
+        <div style="text-align:center;font-size:22px;color:#94a3b8;margin:4px 0">↕️</div>
+
+        <div style="margin-bottom:14px">
+          <label class="label">To (their debt increases) *</label>
+          <select class="input" id="tr-to" onchange="updateTransferPreview()">
+            <option value="">— Select borrower —</option>
+            ${allBors.map(b=>`<option value="${b.ID}">${b.Name} · Owes ${fmtFull(b.outstanding)}</option>`).join('')}
+          </select>
+        </div>
+
+        <div style="margin-bottom:14px">
+          <label class="label">Amount (${CFG.currency}) *</label>
+          <input class="input" id="tr-amount" type="number" min="1" placeholder="0.00" oninput="updateTransferPreview()">
+        </div>
+
+        <div style="margin-bottom:14px">
+          <label class="label">Date</label>
+          <input class="input" id="tr-date" type="date" value="${today()}">
+        </div>
+
+        <div style="margin-bottom:16px">
+          <label class="label">Notes</label>
+          <input class="input" id="tr-notes" placeholder="Reason for transfer…">
+        </div>
+
+        <div id="tr-preview" style="display:none;background:#eff6ff;border-radius:10px;padding:14px;margin-bottom:14px;font-size:13px">
+          <div style="font-weight:600;color:#1d4ed8;margin-bottom:8px">What will happen:</div>
+          <div id="tr-preview-body"></div>
+        </div>
+
+        <button class="btn btn-primary" style="width:100%" id="tr-btn" onclick="submitTransfer()">🔄 Execute Transfer</button>
+      </div>
+
+      <div class="card" style="padding:24px">
+        <div style="font-weight:600;margin-bottom:12px">ℹ️ How Transfers Work</div>
+        <div style="font-size:13px;color:#64748b;line-height:1.7">
+          <p>A transfer reallocates debt obligation between borrowers:</p>
+          <div style="background:#f8fafc;border-radius:8px;padding:12px;margin:10px 0">
+            <strong>Example:</strong> Ramesh owes you ₹50,000. He pays ₹15,000 directly to Suresh on your behalf.
+            <ul style="margin-top:8px;padding-left:16px">
+              <li>Ramesh's debt: ₹50,000 → ₹35,000 ✅</li>
+              <li>Suresh's debt: increases by ₹15,000 📈</li>
+            </ul>
+          </div>
+          <p><strong>Real-world uses:</strong></p>
+          <ul style="padding-left:16px">
+            <li>One borrower repays through another</li>
+            <li>Family debt restructuring</li>
+            <li>Chain lending arrangements</li>
+            <li>Loan guarantor takes over debt</li>
+          </ul>
+        </div>
+
+        <div style="margin-top:16px;border-top:1px solid #f1f5f9;padding-top:14px">
+          <div style="font-weight:600;font-size:13px;margin-bottom:10px">Current Balances</div>
+          ${allBors.filter(b=>b.Status!=='CLOSED').map(b=>`
+            <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f8fafc;font-size:13px">
+              <span style="font-weight:500">${b.Name}</span>
+              <span style="font-weight:700;color:${b.outstanding>0?'#dc2626':'#16a34a'}">${fmtFull(b.outstanding)}</span>
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function updateTransferPreview() {
+  const fid = document.getElementById('tr-from')?.value;
+  const tid = document.getElementById('tr-to')?.value;
+  const amt = parseFloat(document.getElementById('tr-amount')?.value)||0;
+  const el  = document.getElementById('tr-preview');
+  const body= document.getElementById('tr-preview-body');
+  if (!fid||!tid||!amt||fid===tid){if(el)el.style.display='none';return;}
+  const fb  = STATE.borrowers.find(b=>b.ID===fid);
+  const tb  = STATE.borrowers.find(b=>b.ID===tid);
+  if(!fb||!tb){if(el)el.style.display='none';return;}
+  if(el) el.style.display='block';
+  if(body) body.innerHTML=`
+    <div style="display:grid;gap:5px">
+      <div style="display:flex;justify-content:space-between">
+        <span>${fb.Name}:</span>
+        <span><s style="opacity:.4">${fmtFull(fb.outstanding)}</s> → <strong style="color:#16a34a">${fmtFull(Math.max(0,fb.outstanding-amt))}</strong></span>
+      </div>
+      <div style="display:flex;justify-content:space-between">
+        <span>${tb.Name}:</span>
+        <span><s style="opacity:.4">${fmtFull(tb.outstanding)}</s> → <strong style="color:#dc2626">${fmtFull(tb.outstanding+amt)}</strong></span>
+      </div>
+    </div>`;
+}
+
+async function submitTransfer() {
+  const fid   = document.getElementById('tr-from')?.value;
+  const tid   = document.getElementById('tr-to')?.value;
+  const amt   = parseFloat(document.getElementById('tr-amount')?.value);
+  const date  = document.getElementById('tr-date')?.value;
+  const notes = document.getElementById('tr-notes')?.value;
+
+  if (!fid)           { showToast('Select the sender','error');   return; }
+  if (!tid)           { showToast('Select the receiver','error'); return; }
+  if (fid===tid)      { showToast('Cannot transfer to same borrower','error'); return; }
+  if (!amt||amt<=0)   { showToast('Enter a valid amount','error'); return; }
+
+  const fb = STATE.borrowers.find(b=>b.ID===fid);
+  if (fb && amt > fb.outstanding+0.01) {
+    showToast(`Amount exceeds ${fb.Name}'s outstanding (${fmtFull(fb.outstanding)})`,'error'); return;
+  }
+
+  const btn = document.getElementById('tr-btn');
+  if (btn) { btn.disabled=true; btn.textContent='Processing…'; }
+  try {
+    await apiPost({action:'recordTransfer', fromBorrowerId:fid, toBorrowerId:tid, amount:amt, date, notes});
+    showToast('Transfer complete! 🔄','success');
+    await renderTransfers();
+  } catch(e) {
+    showToast(e.message,'error');
+    if (btn) { btn.disabled=false; btn.textContent='🔄 Execute Transfer'; }
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// SETTINGS
+// ══════════════════════════════════════════════════════════
+function renderSettings() {
+  document.getElementById('content').innerHTML = `
+    <div style="max-width:520px">
+      <div class="page-title" style="margin-bottom:22px">Settings</div>
+
+      <!-- API -->
+      <div class="card" style="padding:24px;margin-bottom:16px">
+        <div style="font-weight:600;font-size:15px;margin-bottom:16px">🔗 Google Sheets Connection</div>
+        <label class="label">Apps Script Web App URL</label>
+        <input class="input" id="api-url" value="${CFG.url}"
+          placeholder="https://script.google.com/macros/s/…/exec" style="margin-bottom:8px">
+        <div style="font-size:12px;color:#94a3b8;margin-bottom:14px">
+          Paste the URL from your Google Apps Script deployment. See the User Guide for step-by-step setup.
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="saveApiUrl()" style="flex:1">💾 Save & Connect</button>
+          <button class="btn btn-secondary" onclick="testConnection()">🔍 Test</button>
+          ${CFG.url?`<button class="btn btn-danger" onclick="clearApiUrl()">Disconnect</button>`:''}
+        </div>
+        <div id="test-result" style="margin-top:10px;font-size:13px"></div>
+      </div>
+
+      <!-- Currency -->
+      <div class="card" style="padding:24px;margin-bottom:16px">
+        <div style="font-weight:600;font-size:15px;margin-bottom:14px">💱 Currency</div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <select class="input" id="currency-sel" style="max-width:180px">
+            ${['₹','$','€','£','¥','₦','₱','R','AED'].map(c=>
+              `<option ${CFG.currency===c?'selected':''}>${c}</option>`).join('')}
+          </select>
+          <button class="btn btn-secondary" onclick="saveCurrency()">Save</button>
+        </div>
+      </div>
+
+      <!-- Setup guide card -->
+      <div class="card" style="padding:24px;background:#fffbeb">
+        <div style="font-weight:600;margin-bottom:12px">📋 Google Apps Script Setup</div>
+        <ol style="font-size:13px;color:#374151;line-height:2;padding-left:18px">
+          <li>Go to <strong>Google Sheets</strong> → create a new spreadsheet</li>
+          <li><strong>Extensions → Apps Script</strong></li>
+          <li>Delete all code → paste the <code style="background:#fef3c7;padding:1px 5px;border-radius:3px">Code.gs</code> file from this repo</li>
+          <li><strong>Deploy → New Deployment</strong></li>
+          <li>Type: <strong>Web App</strong> · Execute as: <strong>Me</strong> · Access: <strong>Anyone</strong></li>
+          <li>Click <strong>Deploy</strong> and authorize</li>
+          <li>Copy the <em>Web App URL</em> and paste above</li>
+        </ol>
+        <div style="margin-top:12px;background:#fef3c7;border-radius:8px;padding:10px;font-size:12px">
+          ⚠️ Keep your URL private — it acts as your API key.
+        </div>
+        <a href="guide.html" target="_blank" class="btn btn-secondary" style="margin-top:12px;display:inline-flex">📖 Open Full User Guide</a>
+      </div>
+    </div>
+  `;
+}
+
+async function saveApiUrl() {
+  const url = document.getElementById('api-url')?.value?.trim();
+  if (!url) { showToast('Enter a URL','error'); return; }
+  CFG.url = url;
+  updateConnStatus();
+  await testConnection();
+}
+
+async function testConnection() {
+  const el = document.getElementById('test-result');
+  if (el) el.innerHTML='<span style="color:#64748b">Testing…</span>';
+  try {
+    await apiGet('ping');
+    if (el) el.innerHTML='<span style="color:#16a34a">✅ Connected successfully!</span>';
+    showToast('Connected to Google Sheets!','success');
+  } catch(e) {
+    if (el) el.innerHTML=`<span style="color:#dc2626">❌ ${e.message}</span>`;
+    showToast('Connection failed: '+e.message,'error');
+  }
+}
+
+function clearApiUrl() {
+  CFG.url = '';
+  updateConnStatus();
+  renderSettings();
+  showToast('Disconnected','info');
+}
+
+function saveCurrency() {
+  CFG.currency = document.getElementById('currency-sel')?.value||'₹';
+  showToast('Currency saved','success');
+}
+
+function updateConnStatus() {
+  const el = document.getElementById('conn-status');
+  if (!el) return;
+  if (CFG.demoMode) {
+    el.style.background='rgba(245,158,11,.2)'; el.style.color='#fcd34d';
+    el.textContent='🎭 Demo Mode';
+  } else {
+    el.style.background='rgba(34,197,94,.2)'; el.style.color='#86efac';
+    el.textContent='✅ Connected';
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// MODALS
+// ══════════════════════════════════════════════════════════
+function showModal(html) {
+  document.getElementById('modal-content').innerHTML = html;
+  document.getElementById('modal-overlay').style.display='flex';
+}
+function closeModal() { document.getElementById('modal-overlay').style.display='none'; }
+function handleOverlayClick(e) { if(e.target===document.getElementById('modal-overlay')) closeModal(); }
+
+function showPaymentModal(borrowerId) {
+  const b = STATE.borrowers.find(x=>x.ID===borrowerId);
+  if (!b) return;
+  showModal(`
+    <div style="display:flex;justify-content:space-between;margin-bottom:18px">
+      <div>
+        <div style="font-size:17px;font-weight:700">💳 Record Payment</div>
+        <div style="font-size:13px;color:#64748b">${b.Name}</div>
+      </div>
+      <button onclick="closeModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#94a3b8">✕</button>
+    </div>
+
+    <div style="background:#fef2f2;border-radius:10px;padding:14px;margin-bottom:18px">
+      <div style="font-size:11px;color:#64748b">Outstanding Balance</div>
+      <div style="font-size:28px;font-weight:800;color:#dc2626">${fmtFull(b.outstanding)}</div>
+      <div style="font-size:12px;color:#64748b">Monthly payment: ${fmtFull(b.stats.monthlyPayment)}</div>
+    </div>
+
+    <div style="margin-bottom:12px">
+      <label class="label">Payment Amount *</label>
+      <input class="input" id="pay-amount" type="number" min="0.01" step="0.01"
+             value="${b.stats.monthlyPayment||''}" placeholder="Enter amount">
+    </div>
+    <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap">
+      <button class="btn btn-sm btn-secondary" onclick="document.getElementById('pay-amount').value=${b.stats.monthlyPayment}">
+        EMI ${fmtFull(b.stats.monthlyPayment)}</button>
+      <button class="btn btn-sm btn-secondary" onclick="document.getElementById('pay-amount').value=${b.outstanding}">
+        Full ${fmtFull(b.outstanding)}</button>
+      <button class="btn btn-sm btn-secondary" onclick="document.getElementById('pay-amount').value=${r2(b.outstanding/2)}">
+        Half</button>
+    </div>
+
+    <div style="margin-bottom:12px">
+      <label class="label">Date</label>
+      <input class="input" id="pay-date" type="date" value="${today()}">
+    </div>
+    <div style="margin-bottom:18px">
+      <label class="label">Description</label>
+      <input class="input" id="pay-desc" placeholder="e.g. Monthly EMI, Partial payment">
+    </div>
+
+    <button class="btn btn-success" style="width:100%" id="pay-btn" onclick="submitPayment('${borrowerId}')">
+      ✅ Record Payment
+    </button>
+  `);
+}
+
+async function submitPayment(borrowerId) {
+  const amt  = parseFloat(document.getElementById('pay-amount')?.value);
+  const date = document.getElementById('pay-date')?.value;
+  const desc = document.getElementById('pay-desc')?.value||'Payment received';
+  if (!amt||amt<=0) { showToast('Enter a valid amount','error'); return; }
+  const btn = document.getElementById('pay-btn');
+  if (btn) { btn.disabled=true; btn.textContent='Processing…'; }
+  try {
+    await apiPost({action:'recordPayment', borrowerId, amount:amt, date, description:desc});
+    closeModal();
+    showToast('Payment recorded! ✅','success');
+    STATE.borrowers = await apiGet('getBorrowers');
+    if (STATE.view==='detail')     await renderDetail(borrowerId);
+    else if (STATE.view==='dashboard') await renderDashboard();
+    else drawBorrowersList();
+  } catch(e) {
+    showToast(e.message,'error');
+    if (btn) { btn.disabled=false; btn.textContent='✅ Record Payment'; }
+  }
+}
+
+function showTransferModal(fromId) {
+  const from   = STATE.borrowers.find(b=>b.ID===fromId);
+  const others = STATE.borrowers.filter(b=>b.ID!==fromId);
+  showModal(`
+    <div style="display:flex;justify-content:space-between;margin-bottom:18px">
+      <div>
+        <div style="font-size:17px;font-weight:700">🔄 Quick Transfer</div>
+        <div style="font-size:13px;color:#64748b">From: ${from?.Name}</div>
+      </div>
+      <button onclick="closeModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#94a3b8">✕</button>
+    </div>
+    <div style="margin-bottom:12px">
+      <label class="label">Transfer To</label>
+      <select class="input" id="qt-to">
+        <option value="">— Select —</option>
+        ${others.map(b=>`<option value="${b.ID}">${b.Name} (${fmtFull(b.outstanding)})</option>`).join('')}
+      </select>
+    </div>
+    <div style="margin-bottom:12px">
+      <label class="label">Amount</label>
+      <input class="input" id="qt-amount" type="number" min="1" placeholder="Amount to transfer">
+    </div>
+    <div style="margin-bottom:18px">
+      <label class="label">Date</label>
+      <input class="input" id="qt-date" type="date" value="${today()}">
+    </div>
+    <button class="btn btn-primary" style="width:100%" id="qt-btn" onclick="submitQuickTransfer('${fromId}')">
+      🔄 Execute Transfer
+    </button>
+  `);
+}
+
+async function submitQuickTransfer(fromId) {
+  const tid = document.getElementById('qt-to')?.value;
+  const amt = parseFloat(document.getElementById('qt-amount')?.value);
+  const dt  = document.getElementById('qt-date')?.value;
+  if (!tid)           { showToast('Select recipient','error'); return; }
+  if (!amt||amt<=0)   { showToast('Enter amount','error'); return; }
+  const btn = document.getElementById('qt-btn');
+  if (btn) { btn.disabled=true; btn.textContent='Processing…'; }
+  try {
+    await apiPost({action:'recordTransfer', fromBorrowerId:fromId, toBorrowerId:tid, amount:amt, date:dt});
+    closeModal();
+    showToast('Transfer complete!','success');
+    STATE.borrowers = await apiGet('getBorrowers');
+    if (STATE.view==='detail') await renderDetail(fromId);
+    else drawBorrowersList();
+  } catch(e) {
+    showToast(e.message,'error');
+    if (btn) { btn.disabled=false; btn.textContent='🔄 Execute Transfer'; }
+  }
+}
+
+function confirmClose(id) {
+  const b = STATE.borrowers.find(x=>x.ID===id);
+  showModal(`
+    <div style="text-align:center;padding:10px">
+      <div style="font-size:40px;margin-bottom:12px">🔒</div>
+      <div style="font-size:17px;font-weight:700;margin-bottom:8px">Close Loan?</div>
+      <div style="color:#64748b;font-size:14px;margin-bottom:22px">
+        Mark <strong>${b?.Name}</strong>'s loan as closed.<br>
+        Outstanding: <strong style="color:#dc2626">${fmtFull(b?.outstanding)}</strong>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:center">
+        <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-danger" onclick="executeClose('${id}')">Close Loan</button>
+      </div>
+    </div>`);
+}
+
+async function executeClose(id) {
+  await apiPost({action:'closeLoan',id});
+  closeModal();
+  showToast('Loan closed','success');
+  STATE.borrowers = await apiGet('getBorrowers');
+  navigate('borrowers');
+}
+
+function confirmDelete(id) {
+  const b = STATE.borrowers.find(x=>x.ID===id);
+  showModal(`
+    <div style="text-align:center;padding:10px">
+      <div style="font-size:40px;margin-bottom:12px">🗑️</div>
+      <div style="font-size:17px;font-weight:700;margin-bottom:8px">Delete Borrower?</div>
+      <div style="color:#64748b;font-size:14px;margin-bottom:22px">
+        <strong>${b?.Name}</strong> and all their transactions will be permanently removed.
+      </div>
+      <div style="display:flex;gap:10px;justify-content:center">
+        <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-danger" onclick="executeDelete('${id}')">Delete</button>
+      </div>
+    </div>`);
+}
+
+async function executeDelete(id) {
+  await apiPost({action:'deleteBorrower',id});
+  closeModal();
+  showToast('Deleted','success');
+  STATE.borrowers = await apiGet('getBorrowers');
+  navigate('borrowers');
+}
+
+// ══════════════════════════════════════════════════════════
+// UTILITIES
+// ══════════════════════════════════════════════════════════
+function showToast(msg, type='info') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className   = 'toast toast-'+type;
+  t.style.display = 'block';
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.style.display='none', 3500);
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar')?.classList.toggle('open');
+  document.getElementById('sidebar-overlay').style.display =
+    document.getElementById('sidebar')?.classList.contains('open') ? 'block' : 'none';
+}
+
+function closeSidebar() {
+  document.getElementById('sidebar')?.classList.remove('open');
+  document.getElementById('sidebar-overlay').style.display='none';
+}
+
+async function refreshData() {
+  showToast('Refreshing…','info');
+  STATE.borrowers = await apiGet('getBorrowers');
+  STATE.summary   = await apiGet('getSummary');
+  await renderView();
+  showToast('Refreshed','success');
+}
+
+// ══════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════
+window.addEventListener('load', () => {
+  const mb = document.getElementById('menu-btn');
+  if (mb) mb.style.display = window.innerWidth<=768 ? 'block' : 'none';
+  updateConnStatus();
+  navigate('dashboard');
+});
+
+window.addEventListener('resize', () => {
+  const mb = document.getElementById('menu-btn');
+  if (mb) mb.style.display = window.innerWidth<=768 ? 'block' : 'none';
+  if (window.innerWidth>768) closeSidebar();
+});
+</script>
+</body>
+</html>

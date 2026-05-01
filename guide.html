@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LendTrack — User Guide</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',system-ui,sans-serif;background:#f8fafc;color:#374151;line-height:1.7}
+  a{color:#2563eb;text-decoration:none}a:hover{text-decoration:underline}
+  .layout{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+  aside{background:#1e3a5f;color:#93c5fd;position:sticky;top:0;height:100vh;overflow-y:auto;padding:24px 0}
+  aside h2{font-size:18px;font-weight:800;color:#fff;padding:0 20px 16px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:8px}
+  .toc-section{padding:4px 0}
+  .toc-section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#60a5fa;padding:10px 20px 4px}
+  .toc-link{display:block;padding:6px 20px;font-size:13px;color:#93c5fd;transition:all .15s;border-left:3px solid transparent}
+  .toc-link:hover{color:#fff;background:rgba(255,255,255,.07);border-left-color:#60a5fa;text-decoration:none}
+  main{padding:40px 48px;max-width:860px}
+  h1{font-size:32px;font-weight:800;color:#0f172a;margin-bottom:8px}
+  .lead{font-size:16px;color:#64748b;margin-bottom:40px;max-width:600px}
+  h2{font-size:22px;font-weight:700;color:#0f172a;margin:48px 0 16px;padding-top:16px;border-top:2px solid #e2e8f0}
+  h3{font-size:16px;font-weight:600;color:#1e40af;margin:24px 0 8px}
+  p{margin-bottom:14px;color:#374151}
+  .card{background:#fff;border-radius:14px;padding:20px 24px;box-shadow:0 1px 3px rgba(0,0,0,.08);margin-bottom:20px;border:1px solid #e2e8f0}
+  .callout{border-radius:10px;padding:16px 20px;margin-bottom:18px;font-size:14px}
+  .callout-info{background:#eff6ff;border-left:4px solid #3b82f6;color:#1e40af}
+  .callout-warn{background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e}
+  .callout-tip{background:#f0fdf4;border-left:4px solid #22c55e;color:#15803d}
+  .callout-danger{background:#fef2f2;border-left:4px solid #ef4444;color:#991b1b}
+  table{width:100%;border-collapse:collapse;font-size:14px;margin-bottom:20px}
+  th{background:#f1f5f9;padding:10px 14px;text-align:left;font-weight:600;color:#374151;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+  td{padding:10px 14px;border-bottom:1px solid #f1f5f9;vertical-align:top}
+  tr:hover td{background:#fafafa}
+  code{background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:13px;font-family:monospace;color:#1e40af}
+  .badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+  .badge-blue{background:#dbeafe;color:#1d4ed8}
+  .badge-green{background:#dcfce7;color:#15803d}
+  .badge-orange{background:#ffedd5;color:#c2410c}
+  .badge-purple{background:#f3e8ff;color:#7e22ce}
+  .formula{background:#0f172a;color:#a5f3fc;padding:14px 18px;border-radius:8px;font-family:monospace;font-size:14px;margin:12px 0}
+  .step{display:flex;gap:14px;margin-bottom:16px}
+  .step-num{min-width:30px;height:30px;background:#2563eb;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;margin-top:2px}
+  .rate-compare{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin:16px 0}
+  .rate-box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:14px;text-align:center}
+  .rate-box .main{font-size:22px;font-weight:800;color:#0f172a}
+  .rate-box .sub{font-size:11px;color:#64748b;margin-top:4px}
+  .rate-box .eq{font-size:12px;color:#2563eb;font-weight:600;margin-top:6px}
+  @media(max-width:768px){
+    .layout{grid-template-columns:1fr}
+    aside{position:static;height:auto}
+    main{padding:24px 20px}
+  }
+  #back-btn{display:inline-flex;align-items:center;gap:8px;background:#1e3a5f;color:#fff;padding:8px 16px;border-radius:8px;font-size:14px;font-weight:500;margin-bottom:24px}
+  #back-btn:hover{background:#1e40af;text-decoration:none}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- ═══ TOC SIDEBAR ═══ -->
+<aside>
+  <h2>📖 LendTrack Guide</h2>
+
+  <div class="toc-section">
+    <div class="toc-section-title">Getting Started</div>
+    <a class="toc-link" href="#overview">What is LendTrack?</a>
+    <a class="toc-link" href="#demo-vs-live">Demo vs Live Mode</a>
+    <a class="toc-link" href="#sheets-setup">Google Sheets Setup</a>
+  </div>
+
+  <div class="toc-section">
+    <div class="toc-section-title">Interest Rates</div>
+    <a class="toc-link" href="#rate-types">4 Rate Input Types</a>
+    <a class="toc-link" href="#paise-explained">Paise per ₹ Explained</a>
+    <a class="toc-link" href="#rate-table">Conversion Table</a>
+    <a class="toc-link" href="#rate-examples">Real Examples</a>
+  </div>
+
+  <div class="toc-section">
+    <div class="toc-section-title">Loan Types</div>
+    <a class="toc-link" href="#emi">EMI (Reducing Balance)</a>
+    <a class="toc-link" href="#simple">Simple Interest</a>
+    <a class="toc-link" href="#flat">Flat Rate</a>
+    <a class="toc-link" href="#interest-only">Interest Only (Bullet)</a>
+    <a class="toc-link" href="#loan-compare">Which Type to Choose?</a>
+  </div>
+
+  <div class="toc-section">
+    <div class="toc-section-title">Using the App</div>
+    <a class="toc-link" href="#add-borrower">Adding a Borrower</a>
+    <a class="toc-link" href="#payments">Recording Payments</a>
+    <a class="toc-link" href="#transfers">Borrower Transfers</a>
+    <a class="toc-link" href="#dashboard">Dashboard</a>
+  </div>
+
+  <div class="toc-section">
+    <div class="toc-section-title">Reference</div>
+    <a class="toc-link" href="#faq">FAQ</a>
+    <a class="toc-link" href="#troubleshoot">Troubleshooting</a>
+  </div>
+</aside>
+
+<!-- ═══ MAIN CONTENT ═══ -->
+<main>
+  <a href="index.html" id="back-btn">← Back to App</a>
+
+  <h1>LendTrack User Guide</h1>
+  <p class="lead">A complete guide to managing informal and semi-formal loans — with full support for Indian paise-per-rupee interest rates.</p>
+
+  <!-- ══════════════════════════════════════════ -->
+  <h2 id="overview">What is LendTrack?</h2>
+  <p>LendTrack is a personal lending management app designed for people who lend money to friends, family, or business associates and want to track it properly — without complicated bank software.</p>
+
+  <div class="card">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;text-align:center">
+      <div><div style="font-size:28px">👥</div><strong>Track Borrowers</strong><p style="font-size:13px;color:#64748b;margin-top:4px">Each person gets a full loan profile</p></div>
+      <div><div style="font-size:28px">💰</div><strong>Any Interest Type</strong><p style="font-size:13px;color:#64748b;margin-top:4px">EMI, simple, flat, interest-only, paise/rupee</p></div>
+      <div><div style="font-size:28px">🔄</div><strong>P2P Transfers</strong><p style="font-size:13px;color:#64748b;margin-top:4px">Move debt between borrowers</p></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════ -->
+  <h2 id="demo-vs-live">Demo Mode vs Live Mode</h2>
+
+  <table>
+    <thead><tr><th>Feature</th><th>Demo Mode</th><th>Live Mode (Google Sheets)</th></tr></thead>
+    <tbody>
+      <tr><td>Setup required</td><td>None — works immediately</td><td>One-time Apps Script setup (~5 min)</td></tr>
+      <tr><td>Data storage</td><td>Browser memory only</td><td>Google Sheets (permanent)</td></tr>
+      <tr><td>Data survives refresh</td><td>❌ Lost on page refresh</td><td>✅ Always saved</td></tr>
+      <tr><td>Multiple devices</td><td>❌ No</td><td>✅ Yes — any browser, any device</td></tr>
+      <tr><td>Recommended for</td><td>Exploring the app</td><td>Real use</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-warn">
+    <strong>Important:</strong> In Demo Mode, all data is lost when you close or refresh the browser tab. Set up Google Sheets to save your data permanently.
+  </div>
+
+  <!-- ══════════════════════════════════════════ -->
+  <h2 id="sheets-setup">Google Sheets Setup</h2>
+
+  <div class="step"><div class="step-num">1</div><div>Open <strong>Google Sheets</strong> (sheets.google.com) and create a new blank spreadsheet. Give it a name like "LendTrack Data".</div></div>
+  <div class="step"><div class="step-num">2</div><div>Click <strong>Extensions → Apps Script</strong> in the top menu. A new script editor tab opens.</div></div>
+  <div class="step"><div class="step-num">3</div><div>Delete everything in the editor. Copy all the contents of <code>Code.gs</code> from the LendTrack repository and paste it in.</div></div>
+  <div class="step"><div class="step-num">4</div><div>Click <strong>Deploy → New Deployment</strong>. Set:<br>
+    Type: <strong>Web App</strong> · Execute as: <strong>Me</strong> · Who can access: <strong>Anyone</strong><br>
+    Click <strong>Deploy</strong> and authorize when prompted.</div></div>
+  <div class="step"><div class="step-num">5</div><div>Copy the <strong>Web App URL</strong> (looks like <code>https://script.google.com/macros/s/…/exec</code>).</div></div>
+  <div class="step"><div class="step-num">6</div><div>In LendTrack, go to <strong>⚙️ Settings</strong>, paste the URL, and click <strong>Save &amp; Connect</strong>.</div></div>
+
+  <div class="callout callout-tip">
+    <strong>Tip:</strong> The sheets are created automatically on first use — you don't need to create any columns manually. Three sheets appear: Borrowers, Transactions, Transfers.
+  </div>
+
+  <div class="callout callout-danger">
+    <strong>Security:</strong> Your Web App URL is your API key. Anyone with this URL can read and write your data. Keep it private. If compromised, delete the deployment and create a new one.
+  </div>
+
+  <!-- ══════════════════════════════════════════ -->
+  <h2 id="rate-types">Interest Rate Input Types</h2>
+
+  <p>LendTrack supports four ways to enter interest rates. All are equivalent — just different ways people express the same thing. The app converts automatically.</p>
+
+  <table>
+    <thead><tr><th>Input Type</th><th>Unit</th><th>Who uses it</th><th>Example</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="badge badge-blue">% per annum</span></td>
+        <td>Annual percentage</td>
+        <td>Banks, formal lenders, loan documents</td>
+        <td>"12% p.a."</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-green">% per month</span></td>
+        <td>Monthly percentage</td>
+        <td>Some informal lenders, credit cards</td>
+        <td>"1% per month"</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-orange">Paise / ₹ / month</span></td>
+        <td>Paise per rupee per month</td>
+        <td><strong>Most common in India</strong> — village lenders, chit funds, friends/family</td>
+        <td>"2 paise" or "do paise"</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-purple">₹ per ₹100 / month</span></td>
+        <td>Rupees per hundred per month</td>
+        <td>Another Indian expression, same as paise</td>
+        <td>"₹2 per ₹100 per month"</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ══════════════════════════════════════════ -->
+  <h2 id="paise-explained">Understanding Paise per Rupee</h2>
+
+  <p>This is the most common way interest rates are expressed in informal lending across India — particularly in rural areas, small towns, and among non-banking communities.</p>
+
+  <div class="callout callout-info">
+    <strong>The concept:</strong> "1 paise per rupee per month" means for every ₹1 you lend, the borrower pays back 1 paise (₹0.01) per month as interest. This equals <strong>1% per month = 12% per annum</strong>.
+  </div>
+
+  <h3>How the math works</h3>
+  <div class="formula">
+Interest = Principal × (Paise ÷ 100) × Months
+
+Example: ₹50,000 at 2 paise for 12 months
+Simple Interest = 50,000 × (2 ÷ 100) × 12 = ₹12,000
+  </div>
+
+  <h3>Common expressions in Hindi/regional languages</h3>
+  <table>
+    <thead><tr><th>What people say</th><th>What it means</th><th>Monthly %</th><th>Annual %</th></tr></thead>
+    <tbody>
+      <tr><td>"Ek paise" / "एक पैसा"</td><td>1 paise/₹/month</td><td>1% p.m.</td><td>12% p.a.</td></tr>
+      <tr><td>"Dedh paise" / "डेढ़ पैसा"</td><td>1.5 paise/₹/month</td><td>1.5% p.m.</td><td>18% p.a.</td></tr>
+      <tr><td>"Do paise" / "दो पैसे"</td><td>2 paise/₹/month</td><td>2% p.m.</td><td>24% p.a.</td></tr>
+      <tr><td>"Dhai paise" / "ढाई पैसे"</td><td>2.5 paise/₹/month</td><td>2.5% p.m.</td><td>30% p.a.</td></tr>
+      <tr><td>"Teen paise" / "तीन पैसे"</td><td>3 paise/₹/month</td><td>3% p.m.</td><td>36% p.a.</td></tr>
+      <tr><td>"Paanch paise" / "पाँच पैसे"</td><td>5 paise/₹/month</td><td>5% p.m.</td><td>60% p.a.</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ══════════════════════════════════════════ -->
+  <h2 id="rate-table">Full Conversion Table</h2>
+
+  <div class="rate-compare">
+    <div class="rate-box"><div class="main">1 p</div><div class="sub">paise/₹/mo</div><div class="eq">= 12% p.a.</div></div>
+    <div class="rate-box"><div class="main">1.5 p</div><div class="sub">paise/₹/mo</div><div class="eq">= 18% p.a.</div></div>
+    <div class="rate-box"><div class="main">2 p</div><div class="sub">paise/₹/mo</div><div class="eq">= 24% p.a.</div></div>
+    <div class="rate-box"><div class="main">2.5 p</div><div class="sub">paise/₹/mo</div><div class="eq">= 30% p.a.</div></div>
+    <div class="rate-box"><div class="main">3 p</div><div class="sub">paise/₹/mo</div><div class="eq">= 36% p.a.</div></div>
+    <div class="rate-box"><div class="main">5 p</div><div class="sub">paise/₹/mo</div><div class="eq">= 60% p.a.</div></div>
+  </div>
+
+  <table>
+    <thead><tr><th>Paise/₹/mo</th><th>% per month</th><th>% per annum</th><th>On ₹1 lakh, interest/year</th></tr></thead>
+    <tbody>
+      <tr><td>0.5</td><td>0.5%</td><td>6%</td><td>₹6,000</td></tr>
+      <tr><td>1</td><td>1%</td><td>12%</td><td>₹12,000</td></tr>
+      <tr><td>1.5</td><td>1.5%</td><td>18%</td><td>₹18,000</td></tr>
+      <tr><td>2</td><td>2%</td><td>24%</td><td>₹24,000</td></tr>
+      <tr><td>2.5</td><td>2.5%</td><td>30%</td><td>₹30,000</td></tr>
+      <tr><td>3</td><td>3%</td><td>36%</td><td>₹36,000</td></tr>
+      <tr><td>4</td><td>4%</td><td>48%</td><td>₹48,000</td></tr>
+      <tr><td>5</td><td>5%</td><td>60%</td><td>₹60,000</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ══════════════════════════════════════════ -->
+  <h2 id="rate-examples">Real-World Rate Examples</h2>
+
+  <div class="card">
+    <h3 style="margin-top:0">Example 1: Ramesh borrows ₹50,000 at "2 paise"</h3>
+    <p>You enter: <code>2</code> in rate field, select <strong>Paise / ₹ / month</strong></p>
+    <p>LendTrack converts: 2 paise = 2% per month = 24% per annum</p>
+    <p>EMI (12 months): <strong>₹4,726/month</strong> · Total interest: <strong>₹6,710</strong> · Total repayable: <strong>₹56,710</strong></p>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">Example 2: Bank-style loan at 12% p.a.</h3>
+    <p>You enter: <code>12</code> in rate field, select <strong>% per annum</strong></p>
+    <p>EMI (12 months): <strong>₹4,442/month</strong> · Total interest: <strong>₹3,304</strong> · Total repayable: <strong>₹53,304</strong></p>
+    <p style="color:#64748b;font-size:13px">Note: 12% p.a. bank rate = 1 paise per rupee per month</p>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">Example 3: Zero-interest family loan</h3>
+    <p>You enter: <code>0</code> in rate field, any unit, select <strong>Simple Interest</strong></p>
+    <p>No interest charged. Monthly payment = Principal ÷ Months. Full transparency for family arrangements.</p>
+  </div>
+
+  <!-- ══════════════════════════════════════════ -->
+  <h2 id="emi">Loan Type: EMI (Reducing Balance)</h2>
+
+  <div class="callout callout-info">
+    <strong>Best for:</strong> Standard loans where you want equal monthly payments. Most common and fair to the borrower.
+  </div>
+
+  <p>Equal monthly installments. Each EMI pays off some principal and some interest. As principal reduces, interest portion decreases each month.</p>
+
+  <div class="formula">EMI = P × r × (1+r)ⁿ / ((1+r)ⁿ − 1)
+where: P = principal, r = monthly decimal rate, n = months</div>
+
+  <p><strong>Example:</strong> ₹1,00,000 at 2 paise (24% p.a.) for 24 months → EMI = ₹5,289/month, Total interest = ₹26,938</p>
+
+  <!-- ══════════════════════════════════════════ -->
+  <h2 id="simple">Loan Type: Simple Interest</h2>
+
+  <div class="callout callout-tip">
+    <strong>Best for:</strong> Short-term loans, informal agreements, easy mental calculation.
+  </div>
+
+  <div class="formula">Total Interest = Principal × Monthly Rate × Months
+Monthly Payment = (Principal + Total Interest) ÷ Months</div>
+
+  <p><strong>Example:</strong> ₹50,000 at 2 paise for 6 months → Interest = ₹50,000 × 2% × 6 = ₹6,000. Monthly = ₹9,333</p>
+
+  <!-- ══════════════════════════════════════════ -->
+  <h2 id="flat">Loan Type: Flat Rate</h2>
+
+  <div class="callout callout-warn">
+    <strong>Note:</strong> Flat rate appears cheaper than EMI but has a higher effective rate. 1 paise flat ≠ 1 paise EMI.
+  </div>
+
+  <div class="formula">Monthly Payment = (Principal ÷ Months) + (Principal × Monthly Rate)
+Interest is always on the original principal, not the reducing balance</div>
+
+  <!-- ══════════════════════════════════════════ -->
+  <h2 id="interest-only">Loan Type: Interest Only (Bullet)</h2>
+
+  <div class="callout callout-info">
+    <strong>Best for:</strong> Business loans, bridge financing, seasonal lending where the borrower has irregular cash flows.
+  </div>
+
+  <p>Borrower pays only interest every month. Full principal is returned at the end of the term. Useful when the borrower needs cash flow flexibility.</p>
+
+  <div class="formula">Monthly Payment = Principal × Monthly Rate
+Final Month = Monthly Interest + Full Principal</div>
+
+  <!-- ══════════════════════════════════════════ -->
+  <h2 id="loan-compare">Which Loan Type to Choose?</h2>
+
+  <table>
+    <thead><tr><th>Scenario</th><th>Recommended Type</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td>Regular personal loan to salaried person</td><td>EMI</td><td>Systematic, reduces principal fast</td></tr>
+      <tr><td>Short 3–6 month loan to friend</td><td>Simple Interest</td><td>Easy to explain and calculate</td></tr>
+      <tr><td>Traditional village lending ("vyaj")</td><td>Simple / Flat with paise rate</td><td>Matches local convention</td></tr>
+      <tr><td>Business bridge loan</td><td>Interest Only</td><td>Borrower keeps capital, pays interest till exit</td></tr>
+      <tr><td>Chit fund / committee borrowing</td><td>Flat Rate</td><td>Standard in many chit fund models</td></tr>
+      <tr><td>Zero-interest family loan</td><td>Simple (rate = 0)</td><td>Just tracks repayment schedule</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ══════════════════════════════════════════ -->
+  <h2 id="add-borrower">Adding a Borrower</h2>
+
+  <div class="step"><div class="step-num">1</div><div>Click <strong>➕ Add Borrower</strong> in the sidebar or top bar.</div></div>
+  <div class="step"><div class="step-num">2</div><div>Enter the borrower's <strong>Name</strong> (required) and <strong>Phone</strong> (optional).</div></div>
+  <div class="step"><div class="step-num">3</div><div>Enter <strong>Principal Amount</strong> — the money you are lending.</div></div>
+  <div class="step"><div class="step-num">4</div><div>Enter <strong>Duration</strong> in months.</div></div>
+  <div class="step"><div class="step-num">5</div><div>
+    Enter <strong>Interest Rate</strong> and select the unit:
+    <ul style="margin-top:8px;padding-left:18px">
+      <li>Type <code>2</code> and select <em>Paise / ₹ / month</em> for "2 paise"</li>
+      <li>The app instantly shows the equivalent in % p.m. and % p.a.</li>
+      <li>A reference table appears for paise rates</li>
+    </ul>
+  </div></div>
+  <div class="step"><div class="step-num">6</div><div>Select <strong>Loan Type</strong> (EMI is the default for most cases).</div></div>
+  <div class="step"><div class="step-num">7</div><div>The <strong>Live Preview</strong> on the right shows monthly payment, total interest, and total repayable — updates as you type.</div></div>
+  <div class="step"><div class="step-num">8</div><div>Click <strong>Add Borrower</strong>. The loan is created and the first disbursement is recorded automatically.</div></div>
+
+  <!-- ══════════════════════════════════════════ -->
+  <h2 id="payments">Recording Payments</h2>
+
+  <p>When a borrower pays you, record it in two ways:</p>
+
+  <h3>Quick Pay (from Borrowers list or Dashboard)</h3>
+  <p>Click the green <strong>💳 Pay</strong> button on any borrower card. A modal appears with pre-filled EMI amount and quick buttons for Full, Half, or EMI amounts.</p>
+
+  <h3>From Borrower Profile</h3>
+  <p>Open the borrower's profile → click <strong>💳 Pay</strong> button at the top. Same modal, but you can also see the full transaction history below.</p>
+
+  <div class="callout callout-tip">
+    <strong>Partial payments are fine.</strong> Enter any amount — the outstanding balance updates accordingly. If the full balance is paid off, the loan is automatically marked as Closed.
+  </div>
+
+  <h3>Pre-payments</h3>
+  <p>If a borrower pays ahead of schedule, simply record the payment. The outstanding balance decreases. The payment schedule shows historical vs future payments.</p>
+
+  <!-- ══════════════════════════════════════════ -->
+  <h2 id="transfers">Borrower-to-Borrower Transfers</h2>
+
+  <p>This handles a real-world situation unique to informal lending: <strong>one borrower repays through another</strong>.</p>
+
+  <div class="card">
+    <h3 style="margin-top:0">Scenario: Debt Chain</h3>
+    <p>You lent ₹1 lakh to Ramesh and ₹50,000 to Priya. Ramesh calls and says "I've given ₹20,000 to Priya directly on your behalf."</p>
+    <p><strong>In LendTrack:</strong> Go to Transfers → From: Ramesh → To: Priya → Amount: ₹20,000</p>
+    <p>Result: Ramesh's debt reduces by ₹20,000. Priya's debt increases by ₹20,000. Both transaction histories are updated.</p>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">Scenario: Guarantor Takes Over Debt</h3>
+    <p>Anil borrowed ₹75,000 but can no longer repay. His guarantor Suresh agrees to take over the debt.</p>
+    <p><strong>In LendTrack:</strong> Transfers → From: Anil → To: Suresh → Amount: ₹75,000 (Anil's outstanding)</p>
+    <p>Result: Anil's balance becomes ₹0 (loan closes). Suresh's outstanding increases by ₹75,000.</p>
+  </div>
+
+  <div class="callout callout-warn">
+    <strong>Transfers cannot be reversed.</strong> If you make a mistake, record a reverse transfer to undo it.
+  </div>
+
+  <!-- ══════════════════════════════════════════ -->
+  <h2 id="dashboard">Understanding the Dashboard</h2>
+
+  <table>
+    <thead><tr><th>Metric</th><th>What it means</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Total Capital</strong></td><td>Sum of all principal amounts you've disbursed</td></tr>
+      <tr><td><strong>Expected Interest</strong></td><td>Total interest you'll earn if all loans are fully repaid as scheduled</td></tr>
+      <tr><td><strong>Outstanding</strong></td><td>Total remaining amount across all active loans (what borrowers still owe you)</td></tr>
+      <tr><td><strong>Collected</strong></td><td>Total cash received from all payments so far</td></tr>
+      <tr><td><strong>Recovery %</strong></td><td>Collected ÷ (Principal + Interest) — your portfolio collection rate</td></tr>
+      <tr><td><strong>Overdue</strong></td><td>Loans past their end date with remaining balance — needs follow-up</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ══════════════════════════════════════════ -->
+  <h2 id="faq">Frequently Asked Questions</h2>
+
+  <h3>Can I change the interest rate after creating a loan?</h3>
+  <p>Yes — go to the borrower's profile → Edit. The rate change affects future calculations and the displayed schedule, but does not retroactively change past transactions.</p>
+
+  <h3>What happens when a borrower is marked Overdue?</h3>
+  <p>Loans past their scheduled end date with a remaining balance are automatically flagged as Overdue (shown with a red badge). You can continue recording payments normally — the loan stays open until fully paid.</p>
+
+  <h3>Can I delete a transaction?</h3>
+  <p>Not directly (to preserve audit trail). To reverse a payment, record a Disbursement of the same amount with a note like "Payment reversal — entered by mistake".</p>
+
+  <h3>Is my data secure?</h3>
+  <p>Data is stored in your personal Google Sheets, accessible only via your Apps Script URL. Don't share the URL. The app doesn't send data anywhere else.</p>
+
+  <h3>Can I run this offline?</h3>
+  <p>The app itself (index.html) can run from a local file. But it needs internet to reach Google Sheets. In Demo Mode (no URL), it works fully offline with in-memory storage.</p>
+
+  <h3>What's the difference between "2 paise flat" and "2 paise EMI"?</h3>
+  <p>With <strong>Flat Rate</strong>, interest is always on the full original principal. With <strong>EMI</strong> (reducing balance), interest is on the remaining balance which decreases over time. For the same paise rate, Flat Rate costs more than EMI.</p>
+
+  <!-- ══════════════════════════════════════════ -->
+  <h2 id="troubleshoot">Troubleshooting</h2>
+
+  <table>
+    <thead><tr><th>Problem</th><th>Solution</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Connection test fails</td>
+        <td>Re-check the URL (copy fresh from Apps Script deployment page). Make sure you deployed with "Anyone" access, not "Anyone with Google Account".</td>
+      </tr>
+      <tr>
+        <td>Data shows in app but not in Sheet</td>
+        <td>You may be in Demo Mode. Check Settings — if connected, the green ✅ indicator shows in the sidebar.</td>
+      </tr>
+      <tr>
+        <td>Apps Script authorization error</td>
+        <td>In the Apps Script editor, run any function manually (e.g., <code>doGet</code>) to trigger the authorization flow, then deploy again.</td>
+      </tr>
+      <tr>
+        <td>Sheet shows old data after updating Code.gs</td>
+        <td>After editing Code.gs, you must create a <strong>New Deployment</strong> (not redeploy the same version) to see changes.</td>
+      </tr>
+      <tr>
+        <td>App is slow / timeout on first load</td>
+        <td>Google Apps Script has a cold start delay (~2–5 seconds). Subsequent requests are faster. This is a free-tier limitation.</td>
+      </tr>
+      <tr>
+        <td>CORS error in browser console</td>
+        <td>Make sure the deployment access is set to "Anyone" (not "Anyone with Google Account") and you're using the correct exec URL ending in <code>/exec</code>.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div style="margin-top:40px;padding:20px;background:#f8fafc;border-radius:12px;text-align:center;color:#94a3b8;font-size:13px">
+    <p>LendTrack — Built for real informal lending in India</p>
+    <p style="margin-top:4px"><a href="index.html">← Back to App</a></p>
+  </div>
+</main>
+</div>
+</body>
+</html>
