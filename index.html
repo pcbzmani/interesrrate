@@ -602,7 +602,7 @@ async function renderDashboard() {
       </div>
       <div style="overflow-x:auto">
         <table class="dt">
-          <thead><tr><th>Name</th><th>Principal</th><th>Rate</th><th>Progress</th><th>Outstanding</th><th>Status</th><th></th></tr></thead>
+          <thead><tr><th>Name</th><th>Principal</th><th>Rate</th><th>Progress</th><th>Outstanding</th><th>Status</th><th>Actions</th></tr></thead>
           <tbody>
             ${borrowers.map(b=>`
               <tr style="cursor:pointer" onclick="viewBorrower('${b.ID}')">
@@ -615,7 +615,13 @@ async function renderDashboard() {
                 </td>
                 <td style="font-weight:600;color:${b.outstanding>0?'#dc2626':'#16a34a'}">${fmtFull(b.outstanding)}</td>
                 <td>${statusBadge(b)}</td>
-                <td><button class="btn btn-sm btn-success" onclick="event.stopPropagation();showPaymentModal('${b.ID}')">💳 Pay</button></td>
+                <td onclick="event.stopPropagation()">
+                  <div style="display:flex;gap:4px">
+                    ${b.Status!=='CLOSED'?`<button class="btn btn-sm btn-success" onclick="showPaymentModal('${b.ID}')">💳 Pay</button>`:''}
+                    <button class="btn btn-sm btn-secondary" onclick="STATE.currentBorrowerId='${b.ID}';navigate('edit')" title="Edit">✏️</button>
+                    <button class="btn btn-sm btn-danger" onclick="confirmDelete('${b.ID}')" title="Delete">🗑️</button>
+                  </div>
+                </td>
               </tr>`).join('')}
           </tbody>
         </table>
@@ -747,9 +753,11 @@ function borrowerCard(b) {
           <div style="font-size:10px;color:#94a3b8">Outstanding</div>
           <div style="font-size:18px;font-weight:700;color:${b.outstanding>0?'#dc2626':'#16a34a'}">${fmtFull(b.outstanding)}</div>
         </div>
-        <div style="display:flex;gap:6px">
+        <div style="display:flex;gap:5px;flex-wrap:wrap">
           ${b.Status!=='CLOSED'?`<button class="btn btn-sm btn-success" onclick="event.stopPropagation();showPaymentModal('${b.ID}')">💳 Pay</button>`:''}
-          <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation();viewBorrower('${b.ID}')">View →</button>
+          <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation();viewBorrower('${b.ID}')">View</button>
+          <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation();STATE.currentBorrowerId='${b.ID}';navigate('edit')" title="Edit">✏️</button>
+          <button class="btn btn-sm btn-danger" onclick="event.stopPropagation();confirmDelete('${b.ID}')" title="Delete">🗑️</button>
         </div>
       </div>
     </div>`;
