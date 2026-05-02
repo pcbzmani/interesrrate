@@ -1,12 +1,12 @@
 // ============================================================
-// LendTrack — Google Apps Script Backend
+// Asaktivatti — Google Apps Script Backend
 // ============================================================
 // SETUP:
 //   1. Open Google Sheets > Extensions > Apps Script
 //   2. Paste this entire file, replacing all existing code
 //   3. Deploy > New Deployment > Web App
 //      Execute as: Me | Who can access: Anyone
-//   4. Copy the deployment URL into LendTrack Settings
+//   4. Copy the deployment URL into Asaktivatti Settings
 // ============================================================
 
 const SHEETS = { BORROWERS: 'Borrowers', TRANSACTIONS: 'Transactions', TRANSFERS: 'Transfers' };

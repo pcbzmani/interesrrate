@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LendTrack — User Guide</title>
+<title>Asaktivatti — User Guide</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%231e3a5f'/><text x='50' y='68' font-size='54' text-anchor='middle' fill='%23fbbf24' font-family='system-ui'>₹</text></svg>">
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:'Inter',system-ui,sans-serif;background:#f8fafc;color:#374151;line-height:1.7}
@@ -59,11 +60,11 @@
 
 <!-- ═══ TOC SIDEBAR ═══ -->
 <aside>
-  <h2>📖 LendTrack Guide</h2>
+  <h2>📖 Asaktivatti Guide</h2>
 
   <div class="toc-section">
     <div class="toc-section-title">Getting Started</div>
-    <a class="toc-link" href="#overview">What is LendTrack?</a>
+    <a class="toc-link" href="#overview">What is Asaktivatti?</a>
     <a class="toc-link" href="#demo-vs-live">Demo vs Live Mode</a>
     <a class="toc-link" href="#sheets-setup">Google Sheets Setup</a>
   </div>
@@ -104,12 +105,12 @@
 <main>
   <a href="index.html" id="back-btn">← Back to App</a>
 
-  <h1>LendTrack User Guide</h1>
+  <h1>Asaktivatti User Guide</h1>
   <p class="lead">A complete guide to managing informal and semi-formal loans — with full support for Indian paise-per-rupee interest rates.</p>
 
   <!-- ══════════════════════════════════════════ -->
-  <h2 id="overview">What is LendTrack?</h2>
-  <p>LendTrack is a personal lending management app designed for people who lend money to friends, family, or business associates and want to track it properly — without complicated bank software.</p>
+  <h2 id="overview">What is Asaktivatti?</h2>
+  <p>Asaktivatti is a personal lending management app designed for people who lend money to friends, family, or business associates and want to track it properly — without complicated bank software.</p>
 
   <div class="card">
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;text-align:center">
@@ -140,14 +141,14 @@
   <!-- ══════════════════════════════════════════ -->
   <h2 id="sheets-setup">Google Sheets Setup</h2>
 
-  <div class="step"><div class="step-num">1</div><div>Open <strong>Google Sheets</strong> (sheets.google.com) and create a new blank spreadsheet. Give it a name like "LendTrack Data".</div></div>
+  <div class="step"><div class="step-num">1</div><div>Open <strong>Google Sheets</strong> (sheets.google.com) and create a new blank spreadsheet. Give it a name like "Asaktivatti Data".</div></div>
   <div class="step"><div class="step-num">2</div><div>Click <strong>Extensions → Apps Script</strong> in the top menu. A new script editor tab opens.</div></div>
-  <div class="step"><div class="step-num">3</div><div>Delete everything in the editor. Copy all the contents of <code>Code.gs</code> from the LendTrack repository and paste it in.</div></div>
+  <div class="step"><div class="step-num">3</div><div>Delete everything in the editor. Copy all the contents of <code>Code.gs</code> from the Asaktivatti repository and paste it in.</div></div>
   <div class="step"><div class="step-num">4</div><div>Click <strong>Deploy → New Deployment</strong>. Set:<br>
     Type: <strong>Web App</strong> · Execute as: <strong>Me</strong> · Who can access: <strong>Anyone</strong><br>
     Click <strong>Deploy</strong> and authorize when prompted.</div></div>
   <div class="step"><div class="step-num">5</div><div>Copy the <strong>Web App URL</strong> (looks like <code>https://script.google.com/macros/s/…/exec</code>).</div></div>
-  <div class="step"><div class="step-num">6</div><div>In LendTrack, go to <strong>⚙️ Settings</strong>, paste the URL, and click <strong>Save &amp; Connect</strong>.</div></div>
+  <div class="step"><div class="step-num">6</div><div>In Asaktivatti, go to <strong>⚙️ Settings</strong>, paste the URL, and click <strong>Save &amp; Connect</strong>.</div></div>
 
   <div class="callout callout-tip">
     <strong>Tip:</strong> The sheets are created automatically on first use — you don't need to create any columns manually. Three sheets appear: Borrowers, Transactions, Transfers.
@@ -160,7 +161,7 @@
   <!-- ══════════════════════════════════════════ -->
   <h2 id="rate-types">Interest Rate Input Types</h2>
 
-  <p>LendTrack supports four ways to enter interest rates. All are equivalent — just different ways people express the same thing. The app converts automatically.</p>
+  <p>Asaktivatti supports four ways to enter interest rates. All are equivalent — just different ways people express the same thing. The app converts automatically.</p>
 
   <table>
     <thead><tr><th>Input Type</th><th>Unit</th><th>Who uses it</th><th>Example</th></tr></thead>
@@ -254,7 +255,7 @@ Simple Interest = 50,000 × (2 ÷ 100) × 12 = ₹12,000
   <div class="card">
     <h3 style="margin-top:0">Example 1: Ramesh borrows ₹50,000 at "2 paise"</h3>
     <p>You enter: <code>2</code> in rate field, select <strong>Paise / ₹ / month</strong></p>
-    <p>LendTrack converts: 2 paise = 2% per month = 24% per annum</p>
+    <p>Asaktivatti converts: 2 paise = 2% per month = 24% per annum</p>
     <p>EMI (12 months): <strong>₹4,726/month</strong> · Total interest: <strong>₹6,710</strong> · Total repayable: <strong>₹56,710</strong></p>
   </div>
 
@@ -379,14 +380,14 @@ Final Month = Monthly Interest + Full Principal</div>
   <div class="card">
     <h3 style="margin-top:0">Scenario: Debt Chain</h3>
     <p>You lent ₹1 lakh to Ramesh and ₹50,000 to Priya. Ramesh calls and says "I've given ₹20,000 to Priya directly on your behalf."</p>
-    <p><strong>In LendTrack:</strong> Go to Transfers → From: Ramesh → To: Priya → Amount: ₹20,000</p>
+    <p><strong>In Asaktivatti:</strong> Go to Transfers → From: Ramesh → To: Priya → Amount: ₹20,000</p>
     <p>Result: Ramesh's debt reduces by ₹20,000. Priya's debt increases by ₹20,000. Both transaction histories are updated.</p>
   </div>
 
   <div class="card">
     <h3 style="margin-top:0">Scenario: Guarantor Takes Over Debt</h3>
     <p>Anil borrowed ₹75,000 but can no longer repay. His guarantor Suresh agrees to take over the debt.</p>
-    <p><strong>In LendTrack:</strong> Transfers → From: Anil → To: Suresh → Amount: ₹75,000 (Anil's outstanding)</p>
+    <p><strong>In Asaktivatti:</strong> Transfers → From: Anil → To: Suresh → Amount: ₹75,000 (Anil's outstanding)</p>
     <p>Result: Anil's balance becomes ₹0 (loan closes). Suresh's outstanding increases by ₹75,000.</p>
   </div>
 
@@ -464,7 +465,7 @@ Final Month = Monthly Interest + Full Principal</div>
   </table>
 
   <div style="margin-top:40px;padding:20px;background:#f8fafc;border-radius:12px;text-align:center;color:#94a3b8;font-size:13px">
-    <p>LendTrack — Built for real informal lending in India</p>
+    <p>Asaktivatti — Built for real informal lending in India</p>
     <p style="margin-top:4px"><a href="index.html">← Back to App</a></p>
   </div>
 </main>

@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LendTrack — Lending Management</title>
+<title>Asaktivatti — Lending Management</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%231e3a5f'/><text x='50' y='68' font-size='54' text-anchor='middle' fill='%23fbbf24' font-family='system-ui'>₹</text></svg>">
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
@@ -89,8 +90,13 @@
 <!-- ═══ SIDEBAR ═══ -->
 <div id="sidebar">
   <div style="padding:22px 20px 14px;border-bottom:1px solid rgba(255,255,255,.08)">
-    <div style="font-size:20px;font-weight:800;color:#fff;letter-spacing:-.5px">💰 LendTrack</div>
-    <div style="font-size:11px;color:#93c5fd;margin-top:2px">Lending Management</div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:34px;height:34px;background:#fbbf24;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#1e3a5f;flex-shrink:0">₹</div>
+      <div>
+        <div style="font-size:18px;font-weight:800;color:#fff;letter-spacing:-.5px">Asaktivatti</div>
+        <div style="font-size:10px;color:#93c5fd;margin-top:1px">Lending Management</div>
+      </div>
+    </div>
   </div>
   <nav style="padding:10px 0;flex:1">
     <div class="nav-link active" onclick="navigate('dashboard')" id="nav-dashboard"><span>📊</span>Dashboard</div>
@@ -482,7 +488,7 @@ function updateNav(view) {
     transfers:  ['🔄 Transfers',   'P2P debt movement'],
     settings:   ['⚙️ Settings',    'Configure app']
   };
-  const t = titles[view]||['LendTrack',''];
+  const t = titles[view]||['Asaktivatti',''];
   document.getElementById('breadcrumb').innerHTML =
     `<strong style="color:#0f172a">${t[0]}</strong>${t[1]?` <span style="color:#cbd5e1">›</span> ${t[1]}`:''}`;
 }
@@ -532,7 +538,7 @@ async function renderDashboard() {
     ${isEmpty ? `
       <div style="max-width:480px;margin:40px auto;text-align:center">
         <div style="font-size:56px;margin-bottom:16px">💰</div>
-        <div style="font-size:22px;font-weight:700;color:#0f172a;margin-bottom:8px">Welcome to LendTrack</div>
+        <div style="font-size:22px;font-weight:700;color:#0f172a;margin-bottom:8px">Welcome to Asaktivatti</div>
         <div style="color:#64748b;margin-bottom:28px;line-height:1.6">Start by adding your first borrower. All calculations are done instantly — EMI, simple interest, paise-per-rupee and more.</div>
         <button class="btn btn-primary" style="font-size:16px;padding:12px 28px" onclick="navigate('add')">➕ Add First Borrower</button>
         <div style="margin-top:16px">
