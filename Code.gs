@@ -199,12 +199,14 @@ function updateBorrower(b) {
     if (data[i][B_HDR.indexOf('ID')] === b.ID) {
       const r = i + 1;
       const updates = {
-        Name: b.Name, Phone: b.Phone || '',
+        Name:         b.Name,
+        Phone:        b.Phone        || '',
         InterestRate: parseFloat(b.InterestRate),
-        RateUnit: b.RateUnit || 'PA',
-        Months:   parseInt(b.Months),
-        Status:   b.Status || 'ACTIVE',
-        Notes:    b.Notes  || ''
+        RateUnit:     b.RateUnit     || 'PA',
+        Months:       parseInt(b.Months),
+        InterestType: b.InterestType || 'EMI',
+        Status:       b.Status       || 'ACTIVE',
+        Notes:        b.Notes        || ''
       };
       Object.entries(updates).forEach(([key,val]) => {
         const col = B_HDR.indexOf(key);
