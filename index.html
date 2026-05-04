@@ -61,6 +61,19 @@
     .mobile-nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;padding:8px 0;font-size:10px;color:#94a3b8;cursor:pointer;gap:2px}
     .mobile-nav-btn.active{color:var(--primary)}
     .form-grid{grid-template-columns:1fr}
+    #menu-btn{display:block!important}
+    #content{padding:14px!important}
+    .topbar{padding:8px 14px!important}
+    .page-title{font-size:18px}
+    .section-header{flex-wrap:wrap;gap:8px}
+    .form-outer{grid-template-columns:1fr!important}
+    .tr-grid{grid-template-columns:1fr!important;max-width:100%!important}
+    .mhide{display:none!important}
+    .modal-box{padding:20px;margin:4px}
+    .borrower-card{padding:14px}
+    .detail-actions{flex-wrap:wrap;gap:6px}
+    .detail-actions .btn{flex:1;justify-content:center;min-width:80px;font-size:13px;padding:7px 10px}
+    .stat-card{padding:14px 16px}
   }
   .loading-spinner{width:32px;height:32px;border:3px solid #e2e8f0;border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite;margin:40px auto}
   @keyframes spin{to{transform:rotate(360deg)}}
@@ -113,7 +126,7 @@
 
 <!-- ═══ MAIN ═══ -->
 <div id="main">
-  <div style="background:#fff;border-bottom:1px solid #e2e8f0;padding:10px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:30">
+  <div class="topbar" style="background:#fff;border-bottom:1px solid #e2e8f0;padding:10px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:30">
     <div style="display:flex;align-items:center;gap:12px">
       <button onclick="toggleSidebar()" id="menu-btn" style="display:none;background:none;border:none;font-size:20px;cursor:pointer">☰</button>
       <div id="breadcrumb" style="font-size:14px;color:#64748b"></div>
@@ -602,22 +615,22 @@ async function renderDashboard() {
       </div>
       <div style="overflow-x:auto">
         <table class="dt">
-          <thead><tr><th>Name</th><th>Principal</th><th>Rate</th><th>Progress</th><th>Outstanding</th><th>Status</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Name</th><th class="mhide">Principal</th><th class="mhide">Rate</th><th class="mhide">Progress</th><th>Outstanding</th><th class="mhide">Status</th><th>Actions</th></tr></thead>
           <tbody>
             ${borrowers.map(b=>`
               <tr style="cursor:pointer" onclick="viewBorrower('${b.ID}')">
                 <td><div style="font-weight:600">${b.Name}</div><div style="font-size:11px;color:#94a3b8">${b.Phone||'—'}</div></td>
-                <td>${fmtFull(b.Principal)}</td>
-                <td style="white-space:nowrap">${formatRate(b.InterestRate,b.RateUnit)} · ${b.InterestType}</td>
-                <td style="min-width:110px">
+                <td class="mhide">${fmtFull(b.Principal)}</td>
+                <td class="mhide" style="white-space:nowrap">${formatRate(b.InterestRate,b.RateUnit)} · ${b.InterestType}</td>
+                <td class="mhide" style="min-width:110px">
                   <div class="progress-bar"><div class="progress-fill" style="width:${pct(b.paid,b.stats.totalRepayable)}%;background:#3b82f6"></div></div>
                   <div style="font-size:10px;color:#94a3b8;margin-top:2px">${pct(b.paid,b.stats.totalRepayable)}%</div>
                 </td>
                 <td style="font-weight:600;color:${b.outstanding>0?'#dc2626':'#16a34a'}">${fmtFull(b.outstanding)}</td>
-                <td>${statusBadge(b)}</td>
+                <td class="mhide">${statusBadge(b)}</td>
                 <td onclick="event.stopPropagation()">
-                  <div style="display:flex;gap:4px">
-                    ${b.Status!=='CLOSED'?`<button class="btn btn-sm btn-success" onclick="showPaymentModal('${b.ID}')">💳 Pay</button>`:''}
+                  <div style="display:flex;gap:4px;flex-wrap:wrap">
+                    ${b.Status!=='CLOSED'?`<button class="btn btn-sm btn-success" onclick="showPaymentModal('${b.ID}')">💳</button>`:''}
                     <button class="btn btn-sm btn-secondary" onclick="STATE.currentBorrowerId='${b.ID}';navigate('edit')" title="Edit">✏️</button>
                     <button class="btn btn-sm btn-danger" onclick="confirmDelete('${b.ID}')" title="Delete">🗑️</button>
                   </div>
@@ -753,7 +766,7 @@ function borrowerCard(b) {
           <div style="font-size:10px;color:#94a3b8">Outstanding</div>
           <div style="font-size:18px;font-weight:700;color:${b.outstanding>0?'#dc2626':'#16a34a'}">${fmtFull(b.outstanding)}</div>
         </div>
-        <div style="display:flex;gap:5px;flex-wrap:wrap">
+        <div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end">
           ${b.Status!=='CLOSED'?`<button class="btn btn-sm btn-success" onclick="event.stopPropagation();showPaymentModal('${b.ID}')">💳 Pay</button>`:''}
           <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation();viewBorrower('${b.ID}')">View</button>
           <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation();STATE.currentBorrowerId='${b.ID}';navigate('edit')" title="Edit">✏️</button>
@@ -792,14 +805,14 @@ async function renderDetail(id) {
 
   document.getElementById('content').innerHTML = `
     <!-- Back + Actions -->
-    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:20px">
-      <button class="btn btn-secondary" onclick="navigate('borrowers')">← Borrowers</button>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <div style="margin-bottom:16px">
+      <button class="btn btn-secondary" style="margin-bottom:10px" onclick="navigate('borrowers')">← Borrowers</button>
+      <div class="detail-actions" style="display:flex;gap:8px;flex-wrap:wrap">
         ${b.Status!=='CLOSED'?`<button class="btn btn-success" onclick="showPaymentModal('${b.ID}')">💳 Pay</button>`:''}
         <button class="btn btn-secondary" onclick="showTransferModal('${b.ID}')">🔄 Transfer</button>
         <button class="btn btn-secondary" onclick="STATE.currentBorrowerId='${b.ID}';navigate('edit')">✏️ Edit</button>
         ${b.Status==='ACTIVE'?`<button class="btn btn-danger" onclick="confirmClose('${b.ID}')">🔒 Close</button>`:''}
-        <button class="btn btn-danger btn-sm" title="Delete" onclick="confirmDelete('${b.ID}')">🗑️</button>
+        <button class="btn btn-danger" title="Delete" onclick="confirmDelete('${b.ID}')">🗑️ Delete</button>
       </div>
     </div>
 
@@ -850,17 +863,17 @@ async function renderDetail(id) {
       ${txns.length===0
         ? '<div class="empty-state" style="padding:40px">No transactions yet.</div>'
         : `<div style="overflow-x:auto"><table class="dt">
-            <thead><tr><th>Date</th><th>Type</th><th>Amount</th><th>Description</th><th>Balance</th></tr></thead>
+            <thead><tr><th>Date</th><th>Type</th><th>Amount</th><th class="mhide">Description</th><th>Balance</th></tr></thead>
             <tbody>
               ${[...txns].reverse().map(t=>`
                 <tr>
-                  <td>${fmtDate(t.Date)}</td>
+                  <td style="white-space:nowrap">${fmtDate(t.Date)}</td>
                   <td><span style="background:${t.Type==='PAYMENT'?'#dcfce7':t.Type==='DISBURSEMENT'?'#dbeafe':'#fef9c3'};
                     color:${t.Type==='PAYMENT'?'#15803d':t.Type==='DISBURSEMENT'?'#1e40af':'#854d0e'};
                     padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">${t.Type}</span></td>
                   <td style="font-weight:600;color:${t.Type==='PAYMENT'?'#16a34a':'#dc2626'}">
                     ${t.Type==='PAYMENT'?'−':'+'}${fmtFull(t.Amount)}</td>
-                  <td style="color:#64748b">${t.Description}</td>
+                  <td class="mhide" style="color:#64748b">${t.Description}</td>
                   <td style="font-weight:600">${fmtFull(t.RunningBalance)}</td>
                 </tr>`).join('')}
             </tbody>
@@ -871,14 +884,14 @@ async function renderDetail(id) {
     <!-- Schedule tab (hidden) -->
     <div id="dtab-schedule" class="card" style="overflow:hidden;display:none">
       <div style="overflow-x:auto"><table class="dt">
-        <thead><tr><th>#</th><th>Date</th><th>Payment</th><th>Principal</th><th>Interest</th><th>Balance</th></tr></thead>
+        <thead><tr><th>#</th><th>Date</th><th>Payment</th><th class="mhide">Principal</th><th class="mhide">Interest</th><th>Balance</th></tr></thead>
         <tbody>
           ${schedule.map(s=>`
             <tr style="${s.isPast?'opacity:.45':''}">
-              <td>${s.month}</td><td>${fmtDate(s.date)}</td>
+              <td>${s.month}</td><td style="white-space:nowrap">${fmtDate(s.date)}</td>
               <td style="font-weight:600">${fmtFull(s.payment)}</td>
-              <td style="color:#2563eb">${fmtFull(s.principal)}</td>
-              <td style="color:#dc2626">${fmtFull(s.interest)}</td>
+              <td class="mhide" style="color:#2563eb">${fmtFull(s.principal)}</td>
+              <td class="mhide" style="color:#dc2626">${fmtFull(s.interest)}</td>
               <td style="font-weight:600">${fmtFull(s.balance)}</td>
             </tr>`).join('')}
         </tbody>
@@ -915,7 +928,7 @@ function renderAddForm(editId) {
       <div class="page-title" style="margin-bottom:4px">${isEdit?'Edit Borrower':'New Borrower'}</div>
       <div class="sub-title" style="margin-bottom:22px">${isEdit?'Update loan details':'Fill in loan details — see live preview →'}</div>
 
-      <div style="display:grid;grid-template-columns:1fr 300px;gap:24px;align-items:start">
+      <div class="form-outer" style="display:grid;grid-template-columns:1fr 300px;gap:24px;align-items:start">
 
         <!-- LEFT: Form -->
         <div class="card" style="padding:24px">
@@ -1180,7 +1193,7 @@ async function renderTransfers() {
     <div class="page-title" style="margin-bottom:4px">Borrower Transfers</div>
     <div class="sub-title" style="margin-bottom:22px">Move debt from one borrower to another</div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:820px">
+    <div class="tr-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:820px">
       <div class="card" style="padding:24px">
         <div style="font-weight:600;font-size:15px;margin-bottom:18px">🔄 Record a Transfer</div>
 
